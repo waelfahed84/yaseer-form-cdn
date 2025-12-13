@@ -1,4 +1,4 @@
-# Yaseer Form SDK
+# Yaseer Form SDK (NOT PUBLISHED YET!)
 
 A lightweight JavaScript SDK to dynamically render and control **Yaseer Forms** on any website using a schema‑driven configuration.
 
