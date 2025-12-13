@@ -66,6 +66,8 @@ interface FormConfig {
   on_submission_success?: (data: any) => void;
   on_submission_failure?: (error: any) => void;
 }
+
+See [Form Fields Specification](./README_FIELDS.md)
 ```
 
 ---
