@@ -74,14 +74,14 @@ Each form field is defined as an object inside the `fields` array.
 enum eFormField {
   input, password, select, textarea,
   checkbox, toggle, date, legend,
-  radio, phone, file, multifile,
-  number, typeahead
+  radio, phone, file, number,
+  typeahead
 }
 ```
 
 ### Legend (Layout Only)
 ```js
-{ fieldType: 'legend', label: 'Personal Information' }
+{ fieldType: 'legend', label: 'Personal Information', placeholder: 'secondary paragraph' }
 ```
 
 ---
@@ -133,7 +133,6 @@ Validators are defined as objects inside the `validators` array.
 | `isAlphabetic` | `{ isAlphabetic: true }` | Letters only |
 | `isNumeric` | `{ isNumeric: true }` | Numbers only |
 | `mustBeTruthy` | `{ mustBeTruthy: true }` | Checkbox required |
-| `asyncValidate` | `{ asyncValidate: { url, message } }` | Server validation |
 
 ---
 
