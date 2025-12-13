@@ -1,28 +1,28 @@
 # Yaseer Form SDK
 
-A lightweight JavaScript SDK to dynamically render and control **Yaseer Forms** on any website using a simple configuration-based API.
+A lightweight JavaScript SDK to dynamically render and control **Yaseer Forms** on any website using a schema‑driven configuration.
 
-The SDK loads the Yaseer Form Web Component on demand and mounts it into your page with full control over data, submission, and lifecycle.
+The SDK loads the Yaseer Form Web Component on demand and provides full control over rendering, validation, conditional logic, submission, and lifecycle.
 
 ---
 
 ## ✨ Features
 
 - 🚀 Easy integration via CDN
-- 🌐 Supports Arabic (`ar`) and English (`en`)
-- 🧩 Built on Web Components
-- 🔁 Dynamic form rendering
-- 📤 Programmatic form submission
-- 📥 Get form values on demand
-- 🎯 Slot support for custom content
-- 🧹 Full lifecycle control (init / submit / destroy)
+- 🌐 Arabic (`ar`) & English (`en`) support
+- 🧩 Web Components–based
+- 🧠 Schema‑driven dynamic forms
+- 🔁 Conditional display & enable logic
+- 📤 Programmatic submission
+- 📥 Read form values on demand
+- 🧹 Full lifecycle control
 
 ---
 
 ## 📦 Installation (CDN)
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/waelfahed84/yaseer-form-cdn@v1.0.0/dist/sdk.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/USER/REPO@v1.0.0/dist/sdk.min.js"></script>
 ```
 
 ---
@@ -37,15 +37,12 @@ The SDK loads the Yaseer Form Web Component on demand and mounts it into your pa
     selector: '#form-container',
     language: 'en',
     formId: 'contact-form',
-    fields: [
-      { key: 'name', type: 'text', label: 'Name' },
-      { key: 'email', type: 'email', label: 'Email' }
-    ],
+    fields: [...],
     on_submission_success(data) {
-      console.log('Form submitted successfully', data);
+      console.log(data);
     },
     on_submission_failure(error) {
-      console.error('Form submission failed', error);
+      console.error(error);
     }
   });
 </script>
@@ -53,43 +50,111 @@ The SDK loads the Yaseer Form Web Component on demand and mounts it into your pa
 
 ---
 
-## ⚙️ Configuration (`FormConfig`)
+## 🧱 Form Fields Schema
+
+Each form field is defined as an object inside the `fields` array.
+
+### Core Properties (All Fields)
+
+| Property | Type | Description |
+|-------|------|------------|
+| `sequence` | number | Rendering order |
+| `size` | 1–4 | Grid width (25% → 100%) |
+| `key` | string | Unique field identifier |
+| `label` | string | Field label |
+| `placeholder` | string | Placeholder / description |
+| `value` | any | Initial value |
+| `validators` | array | Validation rules |
+
+---
+
+## 🧩 Field Types
 
 ```ts
-interface FormConfig {
-  selector: string;
-  language?: 'ar' | 'en';
-  formId?: string;
-  slotSelector?: string;
-  fields: any[];
-  value?: { [key: string]: any };
-  on_submission_success?: (data: any) => void;
-  on_submission_failure?: (error: any) => void;
+enum eFormField {
+  input, password, select, textarea,
+  checkbox, toggle, date, legend,
+  radio, phone, file, multifile,
+  number, typeahead
 }
-
-See [Form Fields Specification](./README_FIELDS.md)
 ```
+
+### Legend (Layout Only)
+```js
+{ fieldType: 'legend', label: 'Personal Information' }
+```
+
+---
+
+## 🔀 Conditional Logic
+
+### `shouldDisplay` / `shouldEnable`
+
+```js
+shouldEnable: {
+  logic: 'AND',
+  conditions: [
+    { fieldKey: 'country', operator: 'isNotEmpty' }
+  ]
+}
+```
+
+### Supported Operators
+
+| Operator | Description |
+|--------|------------|
+| `eq` | Equals |
+| `neq` | Not equals |
+| `gt` / `lt` | Greater / Less than |
+| `isValid` | No validation errors |
+| `isEmpty` | Empty value |
+| `isNotEmpty` | Has value |
+| `matches` | Regex match |
+
+---
+
+## ✅ Validators (Field Validation)
+
+Validators are defined as objects inside the `validators` array.
+
+### Available Validators
+
+| Validator | Usage | Description |
+|---------|------|------------|
+| `required` | `{ required: true }` | Required field |
+| `min` | `{ min: 5 }` | Minimum number |
+| `max` | `{ max: 10 }` | Maximum number |
+| `minLength` | `{ minLength: 2 }` | Min string length |
+| `maxLength` | `{ maxLength: 30 }` | Max string length |
+| `maxSize` | `{ maxSize: 2 }` | Max file size (MB) |
+| `isEmail` | `{ isEmail: true }` | Email format |
+| `isPhoneNumber` | `{ isPhoneNumber: true }` | Phone validation |
+| `pattern` | `{ pattern: '/^[23][0-9]{13}$/' }` | Regex validation |
+| `isAlphabetic` | `{ isAlphabetic: true }` | Letters only |
+| `isNumeric` | `{ isNumeric: true }` | Numbers only |
+| `mustBeTruthy` | `{ mustBeTruthy: true }` | Checkbox required |
+| `asyncValidate` | `{ asyncValidate: { url, message } }` | Server validation |
 
 ---
 
 ## 🛠️ SDK Methods
 
-### getFormValues()
+### `getFormValues()`
 ```js
 await form.getFormValues();
 ```
 
-### submitForm()
+### `submitForm()`
 ```js
 await form.submitForm();
 ```
 
-### toggleFormLoader(state)
+### `toggleFormLoader(state)`
 ```js
 form.toggleFormLoader(true);
 ```
 
-### destroyForm()
+### `destroyForm()`
 ```js
 form.destroyForm();
 ```
@@ -97,6 +162,7 @@ form.destroyForm();
 ---
 
 ## 🌍 Global Access
+
 ```js
 window.YaseerForm
 ```
