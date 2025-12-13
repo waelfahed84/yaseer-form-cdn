@@ -79,7 +79,7 @@ class YaseerForm {
         this.#scriptPromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
             // script.src = '../esm/yaseer-form.esm.js';
-            script.src = 'http://localhost:3000/cdn/yaseer-form.esm.js';
+            script.src = 'https://cdn.jsdelivr.net/gh/waelfahed84/yaseer-form-cdn@v1.0.2/esm/yaseer-form.esm.js';
             script.type = 'module';
             script.onload = () => {
                 this.#scriptLoaded = true;
