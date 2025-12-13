@@ -22,7 +22,7 @@ The SDK loads the Yaseer Form Web Component on demand and mounts it into your pa
 ## 📦 Installation (CDN)
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/USER/REPO@v1.0.0/dist/sdk.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/waelfahed84/yaseer-form-cdn@v1.0.0/dist/sdk.min.js"></script>
 ```
 
 ---
