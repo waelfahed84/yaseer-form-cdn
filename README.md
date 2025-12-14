@@ -522,5 +522,7 @@ window.YaseerForm
 
 ---
 
+## Yaseer Form
+By wael Abu Aisheh <https://www.linkedin.com/in/waelfahed84/>
 ## 📄 License
 MIT © Yaseer Form
