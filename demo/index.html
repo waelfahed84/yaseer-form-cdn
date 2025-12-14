@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://cdn.jsdelivr.net/gh/waelfahed84/yaseer-form-cdn@v1.0.3/dist/sdk.min.js"></script>
+</head>
+
+<body>
+
+    <div style="width: 640px; height: auto; border: solid 1px orange; padding: 10px; margin: 80px auto"
+        id="form-container"></div>
+
+    <section>
+        <div class="form-cta-container">
+            <button type="button" onclick="onSubmitForm()">Click me</button>
+        </div>
+    </section>
+
+    <script>
+        const formFields = [
+            {
+                sequence: 1,
+                size: 2,
+                key: "first-name",
+                label: "First Name",
+                placeholder: "First name",
+                fieldType: 'input',
+                value: '',
+                validators: [{ 'required': true }, { 'isAlphabetic': true }, { 'minLength': 2 }, { 'maxLength': 30 }],
+            },
+            {
+                sequence: 2,
+                size: 2,
+                key: "last-name",
+                label: "Last Name",
+                placeholder: "Last name",
+                fieldType: 'input',
+                value: '',
+                validators: [{ 'required': true }, { 'isAlphabetic': true }, { 'minLength': 2 }, { 'maxLength': 30 }],
+                shouldEnable: {
+                    logic: 'AND',
+                    conditions: [
+                        {
+                            fieldKey: 'first-name',
+                            operator: 'isValid',
+                        }
+                    ]
+                },
+            },
+            {
+                sequence: 3,
+                size: 2,
+                key: "mobile-number",
+                label: "Mobile Number",
+                placeholder: "Mobile number",
+                fieldType: 'phone',
+                value: '',
+                validators: [{ 'required': true }, { 'isPhoneNumber': true }],
+            },
+            {
+                sequence: 4,
+                size: 2,
+                key: "email",
+                label: "Email",
+                placeholder: "Email",
+                fieldType: 'input',
+                value: '',
+                validators: [{ 'required': true }, { 'isEmail': true }],
+            },
+            {
+                sequence: 5,
+                size: 4,
+                key: "message",
+                label: "Message",
+                placeholder: "Add you message`",
+                fieldType: 'textarea',
+                value: 'resident',
+                validators: [{ 'required': true }, { 'minLength': 5 }, { 'maxLength': 100 }],
+            },
+        ];
+
+        const form = new YaseerForm({
+            formId: 'abcd',
+            selector: '#form-container',
+            slotSelector: '.form-cta-container',
+            language: 'en', // to sho validation messages in English
+            fields: formFields,
+            on_submission_success: (data) => {
+                console.log('Form submitted successfully:', data);
+            },
+            on_submission_failure: (error) => {
+                console.error('Form submission failed:', error);
+            }
+        });
+
+        function onSubmitForm() {
+            if (form) {
+                form.submitForm();
+            }
+        }
+    </script>
+
+</body>
+
+</html>
