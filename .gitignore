@@ -1,2 +1,6 @@
-web/*
+web/
 node_modules/
+src/
+webpack.config.js
+webpage.prod.js
+tsconfig.json
