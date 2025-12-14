@@ -1,2 +1,0 @@
-import{r as e,h as s}from"./p-DqB_q70x.js";const c="";const t=class{constructor(s){e(this,s)}field;render(){return s("section",{key:"3198b7fa3c1d802873388e78bf44fda7dbe54bf6",class:"legend-field-section"},s("div",{key:"3f93b8b3a7810478b3073235d5cc40c9ec818376",class:"content"},this.field.label&&s("h3",{key:"7793a427b3d18e93c06ea747b1599969c8a1bd8c"},this.field.label),this.field.placeholder&&s("p",{key:"4d40f6549ab169bf9de691805b18632b0100aaeb"},this.field.placeholder)))}};t.style=c;export{t as form_legend};
-//# sourceMappingURL=p-08640cb0.entry.js.map
