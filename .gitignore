@@ -1,6 +1,9 @@
+webpack.config.js
+webpack.prod.js
+tsconfig.json
+package.json
+package-lock.json
+
 web/
 node_modules/
 src/
-webpack.config.js
-webpage.prod.js
-tsconfig.json
