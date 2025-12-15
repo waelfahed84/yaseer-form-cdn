@@ -99,7 +99,7 @@ The SDK loads the Yaseer Form Web Component on demand and provides full control 
 
   const form = new YaseerForm({
     selector: '#form-container',
-    slotSelector: '.cta'
+    slotSelector: '.cta',
     language: 'en',
     formId: 'contact-form',
     fields: formFields,
