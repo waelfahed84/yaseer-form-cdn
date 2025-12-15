@@ -137,6 +137,11 @@ Each form field is defined as an object inside the `fields` array.
 | `optionLabel` | string | the object property to be used as a lable |
 | `optionValue` | string | the object property to be used as a lable |
 
+### extra special Properties (radio)
+| Property | Type | Description |
+|-------|------|------------|
+| `optionSize` | 1–4 | Grid width (25% → 100%) |
+
 ---
 
 ## 🧩 Field Types
