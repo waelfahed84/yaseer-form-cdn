@@ -146,7 +146,7 @@ Each form field is defined as an object inside the `fields` array.
 ### extra special Properties (file)
 | Property | Type | Description |
 |-------|------|------------|
-| `acceptedFiles` | string | ex. image/png |
+| `acceptedFiles` | string[] | ex. ['image/png'] |
 
 ---
 
