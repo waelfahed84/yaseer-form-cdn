@@ -154,7 +154,6 @@ const TypeaheadField = class {
     reposition = () => {
         if (!this.isOpen || !this.inputEl)
             return;
-        debugger;
         const rect = this.inputEl.getBoundingClientRect();
         const dropdownHeight = Math.min(this.filtered.length * 40, 260);
         const spaceBelow = window.innerHeight - rect.bottom;
