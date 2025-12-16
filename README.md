@@ -134,13 +134,19 @@ Each form field is defined as an object inside the `fields` array.
 | Property | Type | Description |
 |-------|------|------------|
 | `options` | {}[] | Options to be renderd |
-| `optionLabel` | string | the object property to be used as a lable |
-| `optionValue` | string | the object property to be used as a lable |
+| `optionLabel` | string | the object property to be used as a lable (ex. option.title) |
+| `optionValue` | string | the object property to be used as a value (ex. option.value) |
 
 ### extra special Properties (radio)
 | Property | Type | Description |
 |-------|------|------------|
 | `optionSize` | 1–4 | Grid width (25% → 100%) |
+
+
+### extra special Properties (radio)
+| Property | Type | Description |
+|-------|------|------------|
+| `acceptedFiles` | string | ex. image/png |
 
 ---
 
