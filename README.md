@@ -143,7 +143,7 @@ Each form field is defined as an object inside the `fields` array.
 | `optionSize` | 1–4 | Grid width (25% → 100%) |
 
 
-### extra special Properties (radio)
+### extra special Properties (file)
 | Property | Type | Description |
 |-------|------|------------|
 | `acceptedFiles` | string | ex. image/png |
