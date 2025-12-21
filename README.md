@@ -112,7 +112,7 @@ The SDK loads the Yaseer Form Web Component on demand and provides full control 
   });
 
   async function handleSubmit(){
-    const result = form.submitForm();
+    const result = await form.submitForm();
     console.log(result);
   }
 </script>
