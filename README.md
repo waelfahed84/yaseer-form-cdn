@@ -32,7 +32,7 @@ The SDK loads the Yaseer Form Web Component on demand and provides full control 
 ```html
 <div id="form-container"></div>
 
-<button class="cta">Click me</button>
+<button class="cta" onclick="handleSubmit()">Click me</button>
 
 <script>
   const formFields = [
@@ -110,6 +110,11 @@ The SDK loads the Yaseer Form Web Component on demand and provides full control 
       console.error(error);
     }
   });
+
+  async function handleSubmit(){
+    const result = form.submitForm();
+    console.log(result);
+  }
 </script>
 ```
 
@@ -176,13 +181,13 @@ enum eFormField {
 shouldEnable: {
   logic: 'AND',
   conditions: [
-    { fieldKey: 'first-name', operator: 'isNotEmpty' }
+    { fieldKey: 'first-name', operator: 'isNotEmpty', value: null }
   ]
 },
 shouldDisplay: {
   logic: 'AND',
   conditions: [
-    { fieldKey: 'email', operator: 'isValid' }
+    { fieldKey: 'email', operator: 'isValid', value: null }
   ]
 }
 ```
