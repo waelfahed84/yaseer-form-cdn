@@ -250,6 +250,10 @@
             }
         });
 
+        form.addEventListener('formUpdated', function ({ detail }) {
+          console.log(detail.isValid ? 'Form is valid' : 'Form is invalid');
+        });
+
         function onSubmitForm() {
             if (form) {
                 form.submitForm();

@@ -36,65 +36,178 @@ The SDK loads the Yaseer Form Web Component on demand and provides full control 
 
 <script>
   const formFields = [
-            {
-                sequence: 1,
-                size: 2,
-                key: "first-name",
-                label: "First Name",
-                placeholder: "First name",
-                fieldType: 'input',
-                value: '',
-                validators: [{ 'required': true }, { 'isAlphabetic': true }, { 'minLength': 2 }, { 'maxLength': 30 }],
-            },
-            {
-                sequence: 2,
-                size: 2,
-                key: "last-name",
-                label: "Last Name",
-                placeholder: "Last name",
-                fieldType: 'input',
-                value: '',
-                validators: [{ 'required': true }, { 'isAlphabetic': true }, { 'minLength': 2 }, { 'maxLength': 30 }],
-                shouldEnable: {
-                    logic: 'AND',
-                    conditions: [
-                        {
-                            fieldKey: 'first-name',
-                            operator: 'isValid',
-                        }
-                    ]
-                },
-            },
-            {
-                sequence: 3,
-                size: 2,
-                key: "mobile-number",
-                label: "Mobile Number",
-                placeholder: "Mobile number",
-                fieldType: 'phone',
-                value: '',
-                validators: [{ 'required': true }, { 'isPhoneNumber': true }],
-            },
-            {
-                sequence: 4,
-                size: 2,
-                key: "email",
-                label: "Email",
-                placeholder: "Email",
-                fieldType: 'input',
-                value: '',
-                validators: [{ 'required': true }, { 'isEmail': true }],
-            },
-            {
-                sequence: 5,
-                size: 4,
-                key: "message",
-                label: "Message",
-                placeholder: "Add you message`",
-                fieldType: 'textarea',
-                value: 'resident',
-                validators: [{ 'required': true }, { 'minLength': 5 }, { 'maxLength': 100 }],
-            },
+    {
+        sequence: 1,
+        size: 4,
+        key: "personal-info",
+        fieldType: 'legend',
+        label: "Personal Information",
+        placeholder: 'Please fill your personal information below',
+    },
+    {
+        sequence: 2,
+        size: 2,
+        key: "first-name",
+        label: "First Name",
+        placeholder: "First name",
+        fieldType: 'input',
+        value: '',
+        validators: [{ 'required': true }, { 'isAlphabetic': true }, { 'minLength': 2 }, { 'maxLength': 30 }],
+    },
+    {
+        sequence: 2,
+        size: 2,
+        key: "last-name",
+        label: "Last Name",
+        placeholder: "Last name",
+        fieldType: 'input',
+        value: '',
+        validators: [{ 'required': true }, { 'isAlphabetic': true }, { 'minLength': 2 }, { 'maxLength': 30 }],
+        shouldEnable: {
+            logic: 'AND',
+            conditions: [
+                {
+                    fieldKey: 'first-name',
+                    operator: 'isValid',
+                }
+            ]
+        },
+    },
+    {
+        sequence: 3,
+        size: 2,
+        key: "mobile-number",
+        label: "Mobile Number",
+        placeholder: "Mobile number",
+        fieldType: 'phone',
+        value: '',
+        defaultCountryCode: '+966',
+        validators: [{ 'required': true }, { 'isPhoneNumber': true }],
+    },
+    {
+        sequence: 4,
+        size: 2,
+        key: "email",
+        label: "Email",
+        placeholder: "Email",
+        fieldType: 'input',
+        value: '',
+        validators: [{ 'required': true }, { 'isEmail': true }],
+    },
+    {
+        sequence: 5,
+        size: 4,
+        key: "Residency-info",
+        fieldType: 'legend',
+        label: "Residency",
+        placeholder: '',
+    },
+    {
+        sequence: 6,
+        size: 2,
+        key: "nationality",
+        label: "Nationality",
+        placeholder: "Select Nationality",
+        fieldType: 'typeahead',
+        options: [
+            { label: 'Jordanian', value: 'JO' },
+            { label: 'Indian', value: 'IN' },
+            { label: 'Palestinian', value: 'PS' },
+            { label: 'Egyptian', value: 'EG' },
+            { label: 'Iraqi', value: 'IQ' },
+            { label: 'Syrian', value: 'SY' }],
+        optionLabel: 'label',
+        optionValue: 'value',
+        value: null,
+        validators: [{ 'required': true }],
+    },
+    {
+        sequence: 7,
+        size: 2,
+        key: "residency-status",
+        label: "Residency Status",
+        placeholder: "Select Residency Status",
+        fieldType: 'select',
+        options: [{ title: 'Resident', optionValue: 'resident' }, { title: 'non-Resident', optionValue: 'non-resident' }],
+        optionLabel: 'title',
+        optionValue: 'optionValue',
+        value: null,
+        validators: [{ 'required': true }],
+    },
+    {
+        sequence: 8,
+        size: 4,
+        key: "subscription-info",
+        fieldType: 'legend',
+        label: "Subscription",
+        placeholder: '',
+    },
+    {
+        sequence: 9,
+        size: 4,
+        key: "is-subscribed",
+        label: "Subscription Status",
+        placeholder: "Select Subscription Status",
+        fieldType: 'radio',
+        options: [
+            { label: 'I am Already Subscribed', value: 'subscribed' },
+            { label: 'Not Subscribed', value: 'not-subscribed', desc: 'Extra step required' }
+        ],
+        optionLabel: 'label',
+        optionValue: 'value',
+        optionDescription: 'desc',
+        optionSize: 2,
+        value: 'subscribed',
+        validators: [{ 'required': true }],
+    },
+    {
+        sequence: 10,
+        size: 4,
+        key: "description",
+        fieldType: 'textarea',
+        label: "Description",
+        placeholder: 'Write more about you',
+        value: null,
+        validators: [{ 'required': true }, { 'minLength': 5 }, { 'maxLength': 200 }],
+        shouldDisplay: {
+            logic: 'AND',
+            conditions: [
+                {
+                    fieldKey: 'is-subscribed',
+                    operator: 'eq',
+                    value: 'not-subscribed'
+                }
+            ]
+        },
+    },
+    {
+        sequence: 11,
+        size: 4,
+        key: "terms-conditions",
+        fieldType: 'legend',
+        label: "Terms & Conditions",
+        placeholder: '',
+    },
+    {
+        sequence: 12,
+        size: 4,
+        key: "terms-accepted",
+        label: "Our Terms & Conditions",
+        placeholder: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.<br/><br/>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+        fieldType: 'checkbox',
+        value: '',
+        validators: [{ 'mustBeTruthy': true }],
+    },
+    {
+        sequence: 13,
+        size: 4,
+        key: "file",
+        fieldType: 'file',
+        label: "Upload your document",
+        placeholder: 'Choose file',
+        acceptedFiles: ['image/png', 'image/jpg', 'application/pdf'],
+        validators: [{ 'maxSize': 1 }]
+    },
   ];
 
   const form = new YaseerForm({
@@ -146,6 +259,11 @@ Each form field is defined as an object inside the `fields` array.
 | Property | Type | Description |
 |-------|------|------------|
 | `optionSize` | 1–4 | Grid width (25% → 100%) |
+
+### extra special Properties (phone)
+| Property | Type | Description |
+|-------|------|------------|
+| `defaultCountryCode ` | string | country code prefixed with + (ex. +962) |
 
 
 ### extra special Properties (file)
@@ -248,6 +366,15 @@ form.toggleFormLoader(true);
 ### `destroyForm()`
 ```js
 form.destroyForm();
+```
+
+## 🛠️ SDK Event Listeners
+### `formUpdated`
+Emits every time a form-field value changed!
+```js
+form.addEventListener('formUpdated', function ({ detail }) {
+  console.log(detail);
+});
 ```
 
 ---
