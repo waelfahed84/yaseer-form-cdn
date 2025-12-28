@@ -2,7 +2,7 @@ import { r as registerInstance, c as createEvent, h } from './index-DqB_q70x.js'
 import { g as getCountryPropByKey, s as sortedCountriesList } from './countriesList-CkZ5wZFN.js';
 
 const flags = {
-    AFG: "🇦🇫", // Afghanistan *
+    AFG: "🇦🇫", // Afghanistan * 
     ARM: "🇦🇲", // Armenia
     AZE: "🇦🇿", // Azerbaijan
     BHR: "🇧🇭", // Bahrain
@@ -243,7 +243,7 @@ const PhoneNumberField = class {
     validationErrors = [];
     connectedCallback() {
         const [countryCode, phoneNumber] = (this.field.value || '').split('-');
-        this.values = { countryCode: countryCode || '+962', phoneNumber: phoneNumber || '' };
+        this.values = { countryCode: countryCode || this.field.defaultCountryCode || '+962', phoneNumber: phoneNumber || '' };
         this.valueChanged.emit({ key: this.field.key, value: `${this.values.countryCode}-${this.values.phoneNumber}` });
     }
     handleBlur() {

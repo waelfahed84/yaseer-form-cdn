@@ -1,4 +1,4 @@
-import { r as registerInstance, h, g as getElement, c as createEvent } from './index-DqB_q70x.js';
+import { r as registerInstance, c as createEvent, h, g as getElement } from './index-DqB_q70x.js';
 import { e as eFormField } from './form-field.model-kUcBqA0i.js';
 import { g as getCountryPropByKey } from './countriesList-CkZ5wZFN.js';
 
@@ -64,12 +64,14 @@ const formBuilderComponentCss = "/* * {\n    box-sizing: border-box;\n    margin
 const FormBuilderComponent = class {
     constructor(hostRef) {
         registerInstance(this, hostRef);
+        this.formUpdated = createEvent(this, "formUpdated");
     }
     formId;
     formFields;
     language = 'en';
     actionUrl;
     sortedFields;
+    formUpdated;
     connectedCallback() {
         if (!this.formFields)
             return;
@@ -100,6 +102,18 @@ const FormBuilderComponent = class {
         field.errors = this.validateField(field);
         this.evaluateAllRules();
         this.sortedFields = new Map(this.sortedFields);
+        this.formUpdated.emit({
+            isValid: this.isFormValid(),
+            formFields: [...this.formFields.values()]
+                .filter(field => !field.hidden && !field.disabled && field.fieldType !== eFormField.legend)
+                .reduce((obj, field) => {
+                obj[field.key] = {
+                    value: field.value,
+                    errors: field.errors,
+                };
+                return obj;
+            }, {}),
+        });
     }
     validateField(field) {
         const value = field.fieldType == eFormField.file || field.fieldType == eFormField.multifile
@@ -152,6 +166,7 @@ const FormBuilderComponent = class {
                 continue;
             if (field.errors.length) {
                 isValid = false;
+                break;
             }
         }
         return isValid;
@@ -5623,9 +5638,13 @@ const required = (type, value, lang = 'en') => {
     return value?.length && value.trim().length ? null : errorMessages.required[lang]();
 };
 const min = (min) => (_, value, lang = 'en') => {
+    if (!value && value !== 0)
+        return null;
     return Number(value) >= min ? null : errorMessages.min[lang](min);
 };
 const max = (max) => (_, value, lang = 'en') => {
+    if (!value && value !== 0)
+        return null;
     return Number(value) <= max ? null : errorMessages.max[lang](max);
 };
 const minLength = (min) => (_, value, lang = 'en') => {
@@ -5645,6 +5664,8 @@ const isEmail = (_, value, lang = 'en') => {
     return emailRegex.test(value) ? null : errorMessages.isEmail[lang]();
 };
 const isPhoneNumber = (_, value, lang = 'en') => {
+    if (!value || !value.trim().length)
+        return errorMessages.isPhoneNumber[lang]();
     const [countryCode, mobileNumber] = value.split('-');
     const number = mobileNumber?.startsWith('0')
         ? mobileNumber.slice(1)
@@ -5669,10 +5690,14 @@ const pattern = (pattern) => (_, value, lang = 'en') => {
     return regExp.test(value) ? null : errorMessages.pattern[lang]();
 };
 const isAlphabetic = (_, value, lang = 'en') => {
+    if (!value || !value.trim().length)
+        return errorMessages.isAlphabetic[lang]();
     const alphaRegex = /^[a-zA-Z\s'-]+$/;
     return alphaRegex.test(value) ? null : errorMessages.isAlphabetic[lang]();
 };
 const isNumeric = (_, value, lang = 'en') => {
+    if (!value || !value.trim().length)
+        return errorMessages.isNumeric[lang]();
     const numericRegex = /^[0-9]+$/;
     return numericRegex.test(value) ? null : errorMessages.isNumeric[lang]();
 };
@@ -5741,7 +5766,7 @@ const YaseerForm = class {
         return data.map(item => {
             const fieldObject = {
                 ...item,
-                validators: this.formatValidators(item.validators),
+                validators: this.formatValidators(item.validators || []),
                 errors: [],
                 isPristine: true,
             };
@@ -5786,12 +5811,12 @@ const YaseerForm = class {
             }
         }
     }
-    componentDidRender() {
-        this.generateWatermark();
-    }
-    generateWatermark() {
-        this.el.shadowRoot.appendChild(document.createElement('yaseer-watermark'));
-    }
+    // componentDidRender() {
+    //   this.generateWatermark();
+    // }
+    // private generateWatermark() {
+    //   this.el.shadowRoot.appendChild(document.createElement('yaseer-watermark'));
+    // }
     render() {
         if (!this.formFields) {
             return h("div", null, "Loading form...");
@@ -5804,32 +5829,5 @@ const YaseerForm = class {
 };
 YaseerForm.style = yaseerFormCss;
 
-const yaseerWatermarkCss = "nav.sc-yaseer-watermark {\n  position: absolute;\n  bottom: 5px;\n  right: 5px;\n  padding: 2px 5px;\n  background-color: rgba(200, 200, 200, 0.3);\n  border-radius: 3px;\n}\n\np.sc-yaseer-watermark {\n  font-family: sans-serif;\n  font-size: 10px;\n  color: #666;\n  font-weight: 300;\n  opacity: 0.5;\n  text-transform: lowercase;\n\n  a{\n    color: #444;\n    text-decoration: none;\n    font-weight: 500;\n\n    &:hover{\n      text-decoration: underline;\n    }\n  }\n}";
-
-const YaseerWatermark = class {
-    constructor(hostRef) {
-        registerInstance(this, hostRef);
-        this.watermarkDeleted = createEvent(this, "watermarkDeleted");
-    }
-    watermarkDeleted;
-    connectedCallback() {
-        console.log("%cYASEER-FORM::https://github.com/waelfahed84/yaseer-form-cdn", `
-        border-top: solid 20px black;
-        border-bottom: solid 20px green;
-        background: white;
-        color: black;
-        padding: 6px 6px;
-        font-size: 14px;
-      `);
-    }
-    disconnertedCallback() {
-        this.watermarkDeleted.emit();
-    }
-    render() {
-        return (null);
-    }
-};
-YaseerWatermark.style = yaseerWatermarkCss;
-
-export { FormBuilderComponent as form_builder, YaseerForm as yaseer_form, YaseerWatermark as yaseer_watermark };
-//# sourceMappingURL=form-builder.yaseer-form.yaseer-watermark.entry.js.map
+export { FormBuilderComponent as form_builder, YaseerForm as yaseer_form };
+//# sourceMappingURL=form-builder.yaseer-form.entry.js.map
