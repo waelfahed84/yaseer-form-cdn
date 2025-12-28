@@ -12,6 +12,7 @@ const TextareaField = class {
     isHidden;
     isDisabled;
     isInvalid;
+    isTouched = false;
     valueChanged;
     fieldBlurred;
     onValueChange(e) {
@@ -19,13 +20,14 @@ const TextareaField = class {
         this.valueChanged.emit({ key: this.field.key, value });
     }
     handleBlur() {
+        this.isTouched = true;
         this.fieldBlurred.emit({ key: this.field.key });
     }
     render() {
         if (this.isHidden) {
             return null;
         }
-        return (h("section", null, h("textarea", { id: this.field.key, placeholder: this.field.placeholder || '', value: this.field.value, class: `${this.isInvalid ? 'invalid' : ''}`, onInput: (e) => this.onValueChange(e), onBlur: this.handleBlur.bind(this), disabled: this.isDisabled }), this.field.label && (h("label", { htmlFor: this.field.key, innerHTML: this.field.label.replace(/\[\--(.*?)\--\]/g, ' <span class="file-size-limit">($1)</span>') })), h("slot", null)));
+        return (h("section", null, h("textarea", { id: this.field.key, placeholder: this.field.placeholder || '', value: this.field.value, class: `${this.isInvalid ? 'invalid' : 'valid'} ${this.isTouched ? 'touched' : 'untouched'}`, onInput: (e) => this.onValueChange(e), onBlur: this.handleBlur.bind(this), disabled: this.isDisabled }), this.field.label && (h("label", { htmlFor: this.field.key, innerHTML: this.field.label.replace(/\[\--(.*?)\--\]/g, ' <span class="file-size-limit">($1)</span>') })), h("slot", null)));
     }
 };
 TextareaField.style = textareaFieldCss;
