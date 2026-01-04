@@ -250,9 +250,22 @@
             }
         });
 
-        form.addEventListener('formUpdated', function ({ detail }) {
-          console.log(detail.isValid ? 'Form is valid' : 'Form is invalid');
+        document.addEventListener('DOMContentLoaded', function () {
+            observeFormChanges();
         });
+
+        function observeFormChanges(updatedForm) {
+            const formElement = document.querySelector('yaseer-form');
+
+            if(!formElement) {
+                return setTimeout(() => observeFormChanges(), 100);
+            };
+
+            formElement.addEventListener('formUpdated', function ({ detail }) {
+                console.log(detail.isValid ? 'Form is valid' : 'Form is invalid');
+            });
+        };
+
 
         function onSubmitForm() {
             if (form) {
