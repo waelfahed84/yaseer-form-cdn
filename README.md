@@ -501,7 +501,7 @@ window.YaseerForm;
 --form-field-typeahead-control-dropdown-item-color: #212529;
 --form-field-typeahead-control-dropdown-item-hover-bg-color: #f2f2f2;
 
-/* CONTINUE FROM HERE */
+/* Legend */
 --form-legend-flex-direction: column;
 --form-legend-justify-content: center;
 --form-legend-align-items: center;
@@ -529,6 +529,7 @@ window.YaseerForm;
 --form-legend-description-color: #6c757d;
 --form-legend-description-text-align: center;
 
+/* spinner */
 --form-spinner-position: absolute;
 --form-spinner-top: 0;
 --form-spinner-left: 0;
@@ -550,6 +551,8 @@ window.YaseerForm;
 
 ## manage css variables of a specific form-field
 
+Each generated form field has a special attribute (::field-key::-form-field), which can be used to style a specific field without affecting other fields of the same type.
+
 ```html
 <style>
   yaseer-form::part(first-name-form-field) {
@@ -560,6 +563,10 @@ window.YaseerForm;
   }
 </style>
 ```
+
+## Find out the comprehensive example
+
+Please check the demo folder to see the implementation of all form fields.
 
 ---
 
