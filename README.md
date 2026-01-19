@@ -7,6 +7,7 @@ The SDK loads the Yaseer Form Web Component on demand and provides full control 
 ---
 
 ## ✨ Features
+
 - 🧠 Schema‑driven dynamic forms
 - 🚀 Easy integration via CDN
 - 🌐 Arabic (`ar`) & English (`en`) support
@@ -35,196 +36,71 @@ The SDK loads the Yaseer Form Web Component on demand and provides full control 
 <button class="cta" onclick="handleSubmit()">Click me</button>
 
 <script>
-  const formFields = [
+  // declare form fields (array of objects)
+  const myFields = [
     {
-        sequence: 1,
-        size: 4,
-        key: "personal-info",
-        fieldType: 'legend',
-        label: "Personal Information",
-        placeholder: 'Please fill your personal information below',
+      sequence: 2,
+      size: 2,
+      key: "first-name",
+      label: "First Name",
+      placeholder: "First name",
+      fieldType: "input",
+      value: "",
+      validators: [{ required: true }, { isAlphabetic: true }, { minLength: 2 }, { maxLength: 30 }]
     },
     {
-        sequence: 2,
-        size: 2,
-        key: "first-name",
-        label: "First Name",
-        placeholder: "First name",
-        fieldType: 'input',
-        value: '',
-        validators: [{ 'required': true }, { 'isAlphabetic': true }, { 'minLength': 2 }, { 'maxLength': 30 }],
+      sequence: 2,
+      size: 2,
+      key: "last-name",
+      label: "Last Name",
+      placeholder: "Last name",
+      fieldType: "input",
+      value: "",
+      validators: [{ required: true }, { isAlphabetic: true }, { minLength: 2 }, { maxLength: 30 }],
+      shouldEnable: {
+        logic: "AND",
+        conditions: [{ fieldKey: "first-name", operator: "isValid" }],
+      },
     },
     {
-        sequence: 2,
-        size: 2,
-        key: "last-name",
-        label: "Last Name",
-        placeholder: "Last name",
-        fieldType: 'input',
-        value: '',
-        validators: [{ 'required': true }, { 'isAlphabetic': true }, { 'minLength': 2 }, { 'maxLength': 30 }],
-        shouldEnable: {
-            logic: 'AND',
-            conditions: [
-                {
-                    fieldKey: 'first-name',
-                    operator: 'isValid',
-                }
-            ]
-        },
+      sequence: 3,
+      size: 2,
+      key: "mobile-number",
+      label: "Mobile Number",
+      placeholder: "Mobile number",
+      fieldType: "phone",
+      value: "",
+      defaultCountryCode: "+962",
+      validators: [{ required: true }, { isPhoneNumber: true }],
     },
     {
-        sequence: 3,
-        size: 2,
-        key: "mobile-number",
-        label: "Mobile Number",
-        placeholder: "Mobile number",
-        fieldType: 'phone',
-        value: '',
-        defaultCountryCode: '+966',
-        validators: [{ 'required': true }, { 'isPhoneNumber': true }],
-    },
-    {
-        sequence: 4,
-        size: 2,
-        key: "email",
-        label: "Email",
-        placeholder: "Email",
-        fieldType: 'input',
-        value: '',
-        validators: [{ 'required': true }, { 'isEmail': true }],
-    },
-    {
-        sequence: 5,
-        size: 4,
-        key: "Residency-info",
-        fieldType: 'legend',
-        label: "Residency",
-        placeholder: '',
-    },
-    {
-        sequence: 6,
-        size: 2,
-        key: "nationality",
-        label: "Nationality",
-        placeholder: "Select Nationality",
-        fieldType: 'typeahead',
-        options: [
-            { label: 'Jordanian', value: 'JO' },
-            { label: 'Indian', value: 'IN' },
-            { label: 'Palestinian', value: 'PS' },
-            { label: 'Egyptian', value: 'EG' },
-            { label: 'Iraqi', value: 'IQ' },
-            { label: 'Syrian', value: 'SY' }],
-        optionLabel: 'label',
-        optionValue: 'value',
-        value: null,
-        validators: [{ 'required': true }],
-    },
-    {
-        sequence: 7,
-        size: 2,
-        key: "residency-status",
-        label: "Residency Status",
-        placeholder: "Select Residency Status",
-        fieldType: 'select',
-        options: [{ title: 'Resident', optionValue: 'resident' }, { title: 'non-Resident', optionValue: 'non-resident' }],
-        optionLabel: 'title',
-        optionValue: 'optionValue',
-        value: null,
-        validators: [{ 'required': true }],
-    },
-    {
-        sequence: 8,
-        size: 4,
-        key: "subscription-info",
-        fieldType: 'legend',
-        label: "Subscription",
-        placeholder: '',
-    },
-    {
-        sequence: 9,
-        size: 4,
-        key: "is-subscribed",
-        label: "Subscription Status",
-        placeholder: "Select Subscription Status",
-        fieldType: 'radio',
-        options: [
-            { label: 'I am Already Subscribed', value: 'subscribed' },
-            { label: 'Not Subscribed', value: 'not-subscribed', desc: 'Extra step required' }
-        ],
-        optionLabel: 'label',
-        optionValue: 'value',
-        optionDescription: 'desc',
-        optionSize: 2,
-        value: 'subscribed',
-        validators: [{ 'required': true }],
-    },
-    {
-        sequence: 10,
-        size: 4,
-        key: "description",
-        fieldType: 'textarea',
-        label: "Description",
-        placeholder: 'Write more about you',
-        value: null,
-        validators: [{ 'required': true }, { 'minLength': 5 }, { 'maxLength': 200 }],
-        shouldDisplay: {
-            logic: 'AND',
-            conditions: [
-                {
-                    fieldKey: 'is-subscribed',
-                    operator: 'eq',
-                    value: 'not-subscribed'
-                }
-            ]
-        },
-    },
-    {
-        sequence: 11,
-        size: 4,
-        key: "terms-conditions",
-        fieldType: 'legend',
-        label: "Terms & Conditions",
-        placeholder: '',
-    },
-    {
-        sequence: 12,
-        size: 4,
-        key: "terms-accepted",
-        label: "Our Terms & Conditions",
-        placeholder: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.<br/><br/>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-        fieldType: 'checkbox',
-        value: '',
-        validators: [{ 'mustBeTruthy': true }],
-    },
-    {
-        sequence: 13,
-        size: 4,
-        key: "file",
-        fieldType: 'file',
-        label: "Upload your document",
-        placeholder: 'Choose file',
-        acceptedFiles: ['image/png', 'image/jpg', 'application/pdf'],
-        validators: [{ 'maxSize': 1 }]
+      sequence: 4,
+      size: 2,
+      key: "email",
+      label: "Email",
+      placeholder: "Email",
+      fieldType: "input",
+      value: "",
+      validators: [{ required: true }, { isEmail: true }],
     },
   ];
 
+  // initialize/render the form
   const form = new YaseerForm({
-    selector: '#form-container',
-    slotSelector: '.cta',
-    language: 'en',
-    formId: 'contact-form',
-    fields: formFields,
+    selector: "#form-container", // the element that will host the form
+    slotSelector: ".cta",        // any external element that needs to be inserted at the bottom of the form
+    language: "en",              // validation messages language (default "en")
+    formId: "contact-form",      // optional, the form tag id attribute
+    fields: myFields,            // the form fields that needs to be generated
     on_submission_success(data) {
       console.log(data);
     },
     on_submission_failure(error) {
       console.error(error);
-    }
+    },
   });
 
-  async function handleSubmit(){
+  async function handleSubmit() {
     const result = await form.submitForm();
     console.log(result);
   }
@@ -237,38 +113,40 @@ Each form field is defined as an object inside the `fields` array.
 
 ### Core Properties (All Fields)
 
-| Property | Type | Description |
-|-------|------|------------|
-| `sequence` | number | Rendering order |
-| `size` | 1–4 | Grid width (25% → 100%) |
-| `key` | string | Unique field identifier |
-| `label` | string | Field label |
+| Property      | Type   | Description               |
+| ------------- | ------ | ------------------------- |
+| `sequence`    | number | Rendering order           |
+| `size`        | 1–4    | Grid width (25% → 100%)   |
+| `key`         | string | Unique field identifier   |
+| `label`       | string | Field label               |
 | `placeholder` | string | Placeholder / description |
-| `value` | any | Initial value |
-| `validators` | array | Validation rules |
+| `value`       | any    | Initial value             |
+| `validators`  | array  | Validation rules          |
 
 ### special Properties (Select/ Typeahead/ radio)
 
-| Property | Type | Description |
-|-------|------|------------|
-| `options` | {}[] | Options to be renderd |
+| Property      | Type   | Description                                                  |
+| ------------- | ------ | ------------------------------------------------------------ |
+| `options`     | {}[]   | Options to be renderd                                        |
 | `optionLabel` | string | the object property to be used as a lable (ex. option.title) |
 | `optionValue` | string | the object property to be used as a value (ex. option.value) |
 
 ### extra special Properties (radio)
-| Property | Type | Description |
-|-------|------|------------|
-| `optionSize` | 1–4 | Grid width (25% → 100%) |
+
+| Property     | Type | Description             |
+| ------------ | ---- | ----------------------- |
+| `optionSize` | 1–4  | Grid width (25% → 100%) |
 
 ### extra special Properties (phone)
-| Property | Type | Description |
-|-------|------|------------|
+
+| Property              | Type   | Description                             |
+| --------------------- | ------ | --------------------------------------- |
 | `defaultCountryCode ` | string | country code prefixed with + (ex. +962) |
 
-
 ### extra special Properties (file)
-| Property | Type | Description |
-|-------|------|------------|
+
+| Property        | Type     | Description       |
+| --------------- | -------- | ----------------- |
 | `acceptedFiles` | string[] | ex. ['image/png'] |
 
 ---
@@ -277,14 +155,24 @@ Each form field is defined as an object inside the `fields` array.
 
 ```ts
 enum eFormField {
-  input, password, select, textarea,
-  checkbox, toggle, date, legend,
-  radio, phone, file, number,
-  typeahead
+  input,
+  password,
+  select,
+  textarea,
+  checkbox,
+  toggle,
+  date,
+  legend,
+  radio,
+  phone,
+  file,
+  number,
+  typeahead,
 }
 ```
 
 ### Legend (Layout Only)
+
 ```js
 { fieldType: 'legend', label: 'Personal Information', placeholder: 'secondary paragraph' }
 ```
@@ -309,17 +197,18 @@ shouldDisplay: {
   ]
 }
 ```
+
 ### Supported Operators
 
-| Operator | Description |
-|--------|------------|
-| `eq` | Equals |
-| `neq` | Not equals |
-| `gt` / `lt` | Greater / Less than |
-| `isValid` | No validation errors |
-| `isEmpty` | Empty value |
-| `isNotEmpty` | Has value |
-| `matches` | Regex match |
+| Operator     | Description          |
+| ------------ | -------------------- |
+| `eq`         | Equals               |
+| `neq`        | Not equals           |
+| `gt` / `lt`  | Greater / Less than  |
+| `isValid`    | No validation errors |
+| `isEmpty`    | Empty value          |
+| `isNotEmpty` | Has value            |
+| `matches`    | Regex match          |
 
 ---
 
@@ -329,50 +218,57 @@ Validators are defined as objects inside the `validators` array.
 
 ### Available Validators
 
-| Validator | Usage | Description |
-|---------|------|------------|
-| `required` | `{ required: true }` | Required field |
-| `min` | `{ min: 5 }` | Minimum number |
-| `max` | `{ max: 10 }` | Maximum number |
-| `minLength` | `{ minLength: 2 }` | Min string length |
-| `maxLength` | `{ maxLength: 30 }` | Max string length |
-| `maxSize` | `{ maxSize: 2 }` | Max file size (MB) |
-| `isEmail` | `{ isEmail: true }` | Email format |
-| `isPhoneNumber` | `{ isPhoneNumber: true }` | Phone validation |
-| `pattern` | `{ pattern: '/^[23][0-9]{13}$/' }` | Regex validation |
-| `isAlphabetic` | `{ isAlphabetic: true }` | Letters only |
-| `isNumeric` | `{ isNumeric: true }` | Numbers only |
-| `mustBeTruthy` | `{ mustBeTruthy: true }` | Checkbox required |
+| Validator       | Usage                              | Description        |
+| --------------- | ---------------------------------- | ------------------ |
+| `required`      | `{ required: true }`               | Required field     |
+| `min`           | `{ min: 5 }`                       | Minimum number     |
+| `max`           | `{ max: 10 }`                      | Maximum number     |
+| `minLength`     | `{ minLength: 2 }`                 | Min string length  |
+| `maxLength`     | `{ maxLength: 30 }`                | Max string length  |
+| `maxSize`       | `{ maxSize: 2 }`                   | Max file size (MB) |
+| `isEmail`       | `{ isEmail: true }`                | Email format       |
+| `isPhoneNumber` | `{ isPhoneNumber: true }`          | Phone validation   |
+| `pattern`       | `{ pattern: '/^[23][0-9]{13}$/' }` | Regex validation   |
+| `isAlphabetic`  | `{ isAlphabetic: true }`           | Letters only       |
+| `isNumeric`     | `{ isNumeric: true }`              | Numbers only       |
+| `mustBeTruthy`  | `{ mustBeTruthy: true }`           | Checkbox required  |
 
 ---
 
 ## 🛠️ SDK Methods
 
 ### `getFormValues()`
+
 ```js
 await form.getFormValues();
 ```
 
 ### `submitForm()`
+
 ```js
 await form.submitForm();
 ```
 
 ### `toggleFormLoader(state)`
+
 ```js
 form.toggleFormLoader(true);
 ```
 
 ### `destroyForm()`
+
 ```js
 form.destroyForm();
 ```
 
 ## 🛠️ SDK Event Listeners
+
 ### `formUpdated`
+
 Emits every time a form-field value changed!
+
 ```js
-form.addEventListener('formUpdated', function ({ detail }) {
+form.addEventListener("formUpdated", function ({ detail }) {
   console.log(detail);
 });
 ```
@@ -382,12 +278,13 @@ form.addEventListener('formUpdated', function ({ detail }) {
 ## 🌍 Global Access
 
 ```js
-window.YaseerForm
+window.YaseerForm;
 ```
 
 ---
 
 # managable css variables (all fields)
+
 ```css
 /* form builder */
 --form-padding-top: 40px;
@@ -450,14 +347,13 @@ window.YaseerForm
 --form-field-control-bg-color: #fff;
 --form-field-control-focus-bg-color: #fff;
 --form-field-control-valid-bg-color: #fff;
---form-field-control-invalid-bg-color: rgba(255, 175, 200, 0.50);
+--form-field-control-invalid-bg-color: rgba(255, 175, 200, 0.5);
 --form-field-control-width: 100%;
 --form-field-control-max-width: 100%;
 --form-field-control-height: 48px;
 --form-field-control-font-size: 14px;
 --form-field-control-order: 2;
 --form-field-control-padding: 0 12px;
-
 
 /* form field textarea control */
 --form-field-textarea-control-height: 96px;
@@ -598,7 +494,8 @@ window.YaseerForm
 --form-field-typeahead-control-dropdown-border: 1px solid #ddd;
 --form-field-typeahead-control-dropdown-border-radius: 6px;
 --form-field-typeahead-control-dropdown-max-height: 260px;
---form-field-typeahead-control-dropdown-box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+--form-field-typeahead-control-dropdown-box-shadow: 0 6px 18px
+  rgba(0, 0, 0, 0.15);
 --form-field-typeahead-control-dropdown-item-padding: 10px 12px;
 --form-field-typeahead-control-dropdown-item-font-size: 14px;
 --form-field-typeahead-control-dropdown-item-color: #212529;
@@ -652,20 +549,24 @@ window.YaseerForm
 ```
 
 ## manage css variables of a specific form-field
+
 ```html
 <style>
-    yaseer-form::part(first-name-form-field) {
-      --form-field-padding-inline-start: 40px;
-      --form-field-control-bg-color: #fff;
-      --form-field-control-focus-bg-color: #fff;
-      --form-field-control-valid-bg-color: #fff;
-    }
+  yaseer-form::part(first-name-form-field) {
+    --form-field-padding-inline-start: 40px;
+    --form-field-control-bg-color: #fff;
+    --form-field-control-focus-bg-color: #fff;
+    --form-field-control-valid-bg-color: #fff;
+  }
 </style>
 ```
 
 ---
 
 ## Yaseer Form
+
 By wael Abu Aisheh <https://www.linkedin.com/in/waelfahed84/>
+
 ## 📄 License
+
 MIT © Yaseer Form
