@@ -1,4 +1,4 @@
-import { r as registerInstance, h } from './index-CgIiIA7J.js';
+import { r as registerInstance, h } from './index-DqB_q70x.js';
 
 const formLegendCss = "";
 
@@ -14,4 +14,4 @@ const FormLegend = class {
 FormLegend.style = formLegendCss;
 
 export { FormLegend as form_legend };
-//# sourceMappingURL=form-legend.entry.esm.js.map
+//# sourceMappingURL=form-legend.entry.js.map

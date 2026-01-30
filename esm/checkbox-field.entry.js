@@ -1,12 +1,12 @@
-import { r as registerInstance, a as createEvent, h } from './index-CgIiIA7J.js';
+import { r as registerInstance, c as createEvent, h } from './index-DqB_q70x.js';
 
 const checkboxFieldCss = "";
 
 const CheckboxField = class {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.valueChanged = createEvent(this, "valueChanged", 7);
-        this.fieldBlurred = createEvent(this, "fieldBlurred", 7);
+        this.valueChanged = createEvent(this, "valueChanged");
+        this.fieldBlurred = createEvent(this, "fieldBlurred");
     }
     field;
     isChecked;
@@ -33,4 +33,4 @@ const CheckboxField = class {
 CheckboxField.style = checkboxFieldCss;
 
 export { CheckboxField as checkbox_field };
-//# sourceMappingURL=checkbox-field.entry.esm.js.map
+//# sourceMappingURL=checkbox-field.entry.js.map

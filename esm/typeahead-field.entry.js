@@ -1,12 +1,12 @@
-import { r as registerInstance, a as createEvent, h } from './index-CgIiIA7J.js';
+import { r as registerInstance, c as createEvent, h } from './index-DqB_q70x.js';
 
 const typeaheadFieldCss = "";
 
 const TypeaheadField = class {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.valueChanged = createEvent(this, "valueChanged", 7);
-        this.fieldBlurred = createEvent(this, "fieldBlurred", 7);
+        this.valueChanged = createEvent(this, "valueChanged");
+        this.fieldBlurred = createEvent(this, "fieldBlurred");
     }
     field;
     isInvalid;
@@ -198,4 +198,4 @@ const TypeaheadField = class {
 TypeaheadField.style = typeaheadFieldCss;
 
 export { TypeaheadField as typeahead_field };
-//# sourceMappingURL=typeahead-field.entry.esm.js.map
+//# sourceMappingURL=typeahead-field.entry.js.map

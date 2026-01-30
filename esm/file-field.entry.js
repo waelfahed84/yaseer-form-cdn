@@ -1,12 +1,12 @@
-import { r as registerInstance, a as createEvent, h } from './index-CgIiIA7J.js';
+import { r as registerInstance, c as createEvent, h } from './index-DqB_q70x.js';
 
 const fileFieldCss = "";
 
 const FileField = class {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.valueChanged = createEvent(this, "valueChanged", 7);
-        this.fieldBlurred = createEvent(this, "fieldBlurred", 7);
+        this.valueChanged = createEvent(this, "valueChanged");
+        this.fieldBlurred = createEvent(this, "fieldBlurred");
     }
     field;
     isInvalid;
@@ -34,4 +34,4 @@ const FileField = class {
 FileField.style = fileFieldCss;
 
 export { FileField as file_field };
-//# sourceMappingURL=file-field.entry.esm.js.map
+//# sourceMappingURL=file-field.entry.js.map
