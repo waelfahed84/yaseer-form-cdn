@@ -1,12 +1,12 @@
-import { r as registerInstance, c as createEvent, h } from './index-DqB_q70x.js';
+import { r as registerInstance, a as createEvent, h } from './index-CgIiIA7J.js';
 
 const numberFieldCss = "";
 
 const NumberField = class {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.valueChanged = createEvent(this, "valueChanged");
-        this.fieldBlurred = createEvent(this, "fieldBlurred");
+        this.valueChanged = createEvent(this, "valueChanged", 7);
+        this.fieldBlurred = createEvent(this, "fieldBlurred", 7);
     }
     field;
     // @Prop() value: any
@@ -48,4 +48,4 @@ const NumberField = class {
 NumberField.style = numberFieldCss;
 
 export { NumberField as number_field };
-//# sourceMappingURL=number-field.entry.js.map
+//# sourceMappingURL=number-field.entry.esm.js.map
