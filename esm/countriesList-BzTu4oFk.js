@@ -2466,6 +2466,17 @@ function sortedCountriesList(language) {
     }
     return countriesList.sort((a, b) => a.short_name_en.localeCompare(b.short_name_en));
 }
+function getCountryByKey(keyName, keyValue) {
+    let target = null;
+    for (let i = 0; i < countriesList.length; i++) {
+        const country = countriesList[i];
+        if (country[keyName].trim().toLowerCase() == keyValue.toLowerCase().trim()) {
+            target = country;
+            break;
+        }
+    }
+    return target;
+}
 function getCountryPropByKey(keyName, keyValue, prop) {
     let target = null;
     for (let i = 0; i < countriesList.length; i++) {
@@ -2479,6 +2490,6 @@ function getCountryPropByKey(keyName, keyValue, prop) {
 }
 
 export { getCountryPropByKey as g, sortedCountriesList as s };
-//# sourceMappingURL=countriesList-CkZ5wZFN.js.map
+//# sourceMappingURL=countriesList-BzTu4oFk.js.map
 
-//# sourceMappingURL=countriesList-CkZ5wZFN.js.map
+//# sourceMappingURL=countriesList-BzTu4oFk.js.map
