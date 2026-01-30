@@ -1,5 +1,275 @@
-import { r as registerInstance, e as getElement, h } from './index-CgIiIA7J.js';
-import { g as getCountryPropByKey } from './countriesList-BzTu4oFk.js';
+import { r as registerInstance, c as createEvent, h, g as getElement } from './index-DqB_q70x.js';
+import { e as eFormField } from './form-field.model-kUcBqA0i.js';
+import { g as getCountryPropByKey } from './countriesList-CkZ5wZFN.js';
+
+const mapper = new Map([
+    ['legend', 'form-legend'],
+    ['input', 'input-field'],
+    ['password', 'input-field'],
+    ['select', 'select-field'],
+    ['textarea', 'textarea-field'],
+    ['checkbox', 'checkbox-field'],
+    ['toggle', 'toggle-field'],
+    ['date', 'date-field'],
+    ['radio', 'radio-field'],
+    ['phone', 'phone-number-field'],
+    ['file', 'file-field'],
+    ['number', 'number-field'],
+    ['typeahead', 'typeahead-field'],
+]);
+
+function evaluateRule(rule, fieldsMap) {
+    const logic = rule.logic ?? 'AND';
+    const results = rule.conditions.map(condition => {
+        const targetField = fieldsMap.get(condition.fieldKey);
+        if (!targetField)
+            return false;
+        const targetValue = targetField.value;
+        switch (condition.operator) {
+            case 'eq': return targetValue === condition.value;
+            case 'neq': return targetValue !== condition.value;
+            case 'gt': return Number(targetValue) > Number(condition.value);
+            case 'lt': return Number(targetValue) < Number(condition.value);
+            case 'isValid': return targetField.errors.length === 0;
+            case 'isNotEmpty':
+                return targetValue !== null &&
+                    targetValue !== undefined &&
+                    targetValue !== '' &&
+                    !(Array.isArray(targetValue) && targetValue.length === 0);
+            case 'isEmpty':
+                return targetValue === null ||
+                    targetValue === undefined ||
+                    targetValue === '' ||
+                    (Array.isArray(targetValue) && targetValue.length === 0);
+            case 'matches':
+                if (typeof targetValue !== 'string' || typeof condition.value !== 'string') {
+                    return false;
+                }
+                const regex = new RegExp(condition.value);
+                return regex.test(targetValue);
+            default:
+                return false;
+        }
+    });
+    // apply AND / OR
+    if (logic === 'AND') {
+        return results.every(Boolean);
+    }
+    else {
+        return results.some(Boolean);
+    }
+}
+
+const formBuilderComponentCss = "/* * {\n    box-sizing: border-box;\n    margin: 0;\n    padding: 0;\n}\n\n.wd-custom-form {\n    padding-top: var(--form-builder-padding-top, 24px);\n    padding-right: var(--form-builder-padding-right, 16px);\n    padding-bottom: var(--form-builder-padding-bottom, 24px);\n    padding-left: var(--form-builder-padding-left, 16px);\n}\n\n.field-col-span-1 {\n    grid-column: span 1 / span 1;\n\n    @media (min-width: 575px) {\n        grid-column: span 1 / span 1;\n    }\n}\n\n.field-col-span-2 {\n    grid-column: span 1 / span 1;\n\n    @media (min-width: 575px) {\n        grid-column: span 2 / span 2;\n    }\n}\n\n.field-col-span-3 {\n    grid-column: span 1 / span 1;\n\n    @media (min-width: 575px) {\n        grid-column: span 3 / span 3;\n    }\n}\n\n.field-col-span-4 {\n    grid-column: span 1 / span 1;\n\n    @media (min-width: 575px) {\n        grid-column: span 4 / span 4;\n    }\n} */\n\n.form-fields-grid {\n    /* display: grid;\n    grid-template-columns: repeat(1, minmax(0, 1fr));\n    row-gap: var(--grid-y-gap, 24px);\n    column-gap: var(--grid-x-gap, 16px);\n\n    @media (min-width: 575px) {\n        grid-template-columns: repeat(4, minmax(0, 1fr));\n    } */\n\n    /* .field-error {\n        color: var(--field-error-color, #dc3545);\n        font-family: var(--field-error-font-family, sans-serif);\n        font-size: var(--field-error-font-size, 12px);\n        font-weight: var(--field-error-font-weight, 400);\n        margin-top: var(--field-error-margin-top, 0px);\n    }\n\n    label {\n        font-family: var(--form-field-label-font-family, sans-serif);\n        color: var(--form-field-label-color, #7b8895);\n        order: var(--form-field-label-order, 1);\n        position: var(--form-field-label-position, static);\n        top: var(--form-field-label-top, auto);\n        left: var(--form-field-label-left, auto);\n        bottom: var(--form-field-label-bottom, auto);\n        right: var(--form-field-label-right, auto);\n        display: inline-block;\n        font-weight: var(--form-field-label-font-weight, 400);\n        font-size: var(--form-field-label-font-size, 14px);\n        background-color: var(--form-field-label-bg-color, transparent);\n        padding: var(--form-field-label-padding, 0);\n        transition: all ease-out 0.4s;\n    } */\n\n    [class*=\"-form-field\"] {\n        /* padding-top: var(--form-field-padding-top, 0px);\n        padding-right: var(--form-field-padding-right, 0px);\n        padding-bottom: var(--form-field-padding-bottom, 0px);\n        padding-left: var(--form-field-padding-left, 0px);\n\n        display: flex;\n        flex-direction: var(--form-field-flex-direction, column);\n        gap: var(--form-field-gap, 8px); */\n\n        input,\n        select,\n        textarea {\n            /* width: 100%;\n            max-width: 100%;\n            height: var(--form-field-control-height, 48px);\n            border-top-left-radius: var(--form-field-control-border-top-left-radius, 0.25rem);\n            border-top-right-radius: var(--form-field-control-border-top-right-radius, 0.25rem);\n            border-bottom-left-radius: var(--form-field-control-border-bottom-left-radius, 0.25rem);\n            border-bottom-right-radius: var(--form-field-control-border-bottom-right-radius, 0.25rem);\n            background-color: var(--form-field-control-bg-color, #fff);\n            border: 1px solid var(--form-field-control-border-color, #ced4da);\n            order: var(--form-field-control-order, 2);\n            color: var(--form-field-control-text-color, #495057);\n            font-size: var(--form-field-control-font-size, 14px);\n            font-family: var(--form-field-font-family, sans-serif);\n            transition: all ease-out 0.4s; */\n\n            /* +label {\n                color: var(--form-field-label-color, #7b8895);\n            } */\n\n            /* &:focus {\n                background-color: var(--form-field-control-focus-bg-color, #fff);\n                border-color: var(--form-field-control-focus-border-color, #86b7fe);\n                outline: none;\n\n                +label {\n                    color: var(--form-field-control-focus-label-color, #5b89ce);\n                }\n            }\n\n            &.invalid {\n                background-color: var(--form-field-control-invalid-bg-color, rgba(255, 175, 200, 0.50));\n                border-color: var(--form-field-control-invalid-border-color, #dc3545);\n                color: var(--form-field-control-invalid-text-color, #463333);\n\n                +label {\n                    color: var(--form-field-control-invalid-label-color, #dc3545);\n                }\n            } */\n\n            /* &:disabled {\n                opacity: 0.6;\n                cursor: not-allowed;\n\n                +label {\n                    opacity: 0.6;\n                    cursor: not-allowed;\n                }\n            } */\n        }\n    }\n\n}\n\n/* .file-size-limit {\n    font-weight: 400;\n    font-size: 12px;\n    color: #6c757d;\n    font-style: italic;\n} */";
+
+const FormBuilderComponent = class {
+    constructor(hostRef) {
+        registerInstance(this, hostRef);
+        this.formUpdated = createEvent(this, "formUpdated");
+    }
+    formId;
+    formFields;
+    language = 'en';
+    actionUrl;
+    sortedFields;
+    formUpdated;
+    connectedCallback() {
+        if (!this.formFields)
+            return;
+        this.sortedFields = new Map(this.formFields.sort((a, b) => a.sequence - b.sequence).map(f => [f.key, f]));
+        for (let field of this.sortedFields.values()) {
+            field.errors = this.validateField(field);
+        }
+        this.evaluateAllRules();
+    }
+    handleFieldBlurred(event) {
+        const field = this.sortedFields.get(event.detail.key);
+        if (!field)
+            return;
+        Object.assign(field, {
+            isPristine: false,
+        });
+        field.errors = this.validateField(field);
+        this.evaluateAllRules();
+        this.sortedFields = new Map(this.sortedFields);
+    }
+    handleValueChange(event) {
+        const field = this.sortedFields.get(event.detail.key);
+        if (!field)
+            return;
+        Object.assign(field, {
+            value: event.detail.value,
+        });
+        field.errors = this.validateField(field);
+        this.evaluateAllRules();
+        this.sortedFields = new Map(this.sortedFields);
+        this.formUpdated.emit({
+            isValid: this.isFormValid(),
+            formFields: [...this.formFields.values()]
+                .filter(field => !field.hidden && !field.disabled && field.fieldType !== eFormField.legend)
+                .reduce((obj, field) => {
+                obj[field.key] = {
+                    value: field.value,
+                    errors: field.errors,
+                };
+                return obj;
+            }, {}),
+        });
+    }
+    validateField(field) {
+        const value = field.fieldType == eFormField.file || field.fieldType == eFormField.multifile
+            ? field
+            : field.value;
+        return field.validators.map(validator => validator(field.fieldType, value, this.language || 'en')).filter(error => error);
+    }
+    evaluateAllRules() {
+        this.sortedFields.forEach(field => {
+            let checkEnable = field.shouldEnable && field.fieldType !== eFormField.legend;
+            let checkDisplay = field.shouldDisplay && field.fieldType !== eFormField.legend;
+            // if (!field.shouldEnable || field.fieldType === eFormField.legend) return;
+            if (checkEnable) {
+                const shouldEnable = evaluateRule(field.shouldEnable, this.sortedFields);
+                field.disabled = !shouldEnable;
+                // Optional: clear value when disabled
+                if (!shouldEnable) {
+                    // field.value = null;
+                    field.errors = [];
+                    field.isPristine = true;
+                }
+            }
+            if (checkDisplay) {
+                const shouldDisplay = evaluateRule(field.shouldDisplay, this.sortedFields);
+                field.hidden = !shouldDisplay;
+                // Optional: clear value when disabled
+                if (!shouldDisplay) {
+                    field.value = null;
+                    field.errors = [];
+                    field.isPristine = true;
+                }
+            }
+        });
+        // Trigger rerender
+        this.sortedFields = new Map(this.sortedFields);
+    }
+    componentWillRender() {
+        if (!this.sortedFields)
+            return;
+        for (const field of this.sortedFields?.values()) {
+            field.errors = this.validateField(field);
+        }
+    }
+    isFormValid() {
+        if (!this.sortedFields)
+            return false;
+        let isValid = true;
+        for (const field of this.sortedFields.values()) {
+            if (field.hidden || field.disabled)
+                continue;
+            if (field.errors.length) {
+                isValid = false;
+                break;
+            }
+        }
+        return isValid;
+    }
+    markAllFieldsTouched() {
+        if (!this.sortedFields)
+            return;
+        this.sortedFields.forEach(field => {
+            field.isPristine = false;
+            field.errors = (field.hidden || field.disabled) ? [] : this.validateField(field);
+        });
+        this.sortedFields = new Map(this.sortedFields);
+    }
+    getFormValues() {
+        return new Promise((resolve) => {
+            const payload = {};
+            if (!this.sortedFields)
+                return payload;
+            for (const field of this.sortedFields.values()) {
+                if (field.fieldType === eFormField.legend)
+                    continue;
+                payload[field.key] = field.value;
+            }
+            resolve(payload);
+        });
+    }
+    handleSubmit() {
+        return new Promise((resolve, reject) => {
+            this.evaluateAllRules();
+            if (!this.isFormValid()) {
+                this.markAllFieldsTouched();
+                reject({
+                    message: 'Form validation failed.',
+                    formFields: [...this.formFields.values()]
+                        .filter(field => !field.hidden && !field.disabled && field.fieldType !== eFormField.legend)
+                        .reduce((obj, field) => {
+                        obj[field.key] = {
+                            value: field.value,
+                            errors: field.errors,
+                        };
+                        return obj;
+                    }, {}),
+                });
+                return;
+            }
+            const payload = [...this.sortedFields.values()]
+                .filter(field => field.fieldType !== eFormField.legend)
+                .reduce((object, field) => {
+                object[field.key] = field.value;
+                return object;
+            }, {});
+            if (this.actionUrl?.length) {
+                // If actionUrl is provided, submit the form data to the URL
+                const formElement = document.createElement('form');
+                formElement.method = 'POST';
+                formElement.action = this.actionUrl;
+                formElement.style.display = 'none';
+                for (const key in payload) {
+                    const inputElement = document.createElement('input');
+                    inputElement.type = 'hidden';
+                    inputElement.name = key;
+                    inputElement.value = payload[key];
+                    formElement.appendChild(inputElement);
+                }
+                document.body.appendChild(formElement);
+                formElement.submit();
+                document.body.removeChild(formElement);
+            }
+            else {
+                resolve(payload);
+            }
+        });
+    }
+    render() {
+        if (!this.sortedFields) {
+            return null;
+        }
+        const formContent = (h("div", { class: "form-fields-grid" }, [...this.sortedFields.values()].map((field, index) => {
+            const error = field.errors.length && !field.isPristine && !field.hidden && !field.disabled ? (h("span", { class: "field-error", style: { order: '3' } }, field.errors[0])) : null;
+            const attributes = {
+                language: this.language || 'en',
+                field,
+                className: 'form-field-container', //`${field.key}-form-field`,
+                part: `${field.key}-form-field`,
+                isInvalid: field.errors.length && !field.isPristine,
+                isDisabled: field.disabled ?? false,
+                isHidden: field.hidden ?? false,
+                value: field.value,
+            };
+            const checkableTypes = ['toggle', 'checkbox'];
+            if (checkableTypes.includes(field.fieldType)) {
+                Object.assign(attributes, { isChecked: field.value == true });
+            }
+            if (field.fieldType === eFormField.radio) {
+                Object.assign(attributes, { value: field.value });
+            }
+            return (h("div", { class: `field-col-span-${field.size}`, key: index }, h(mapper.get(field.fieldType), { ...attributes }, error)));
+        }), h("div", { class: "field-col-span-4" }, h("slot", null))));
+        return (h("form", { class: "wd-custom-form", id: this.formId || '' }, formContent));
+    }
+};
+FormBuilderComponent.style = formBuilderComponentCss;
 
 const errorMessages = {
     required: {
@@ -45,12 +315,7 @@ const errorMessages = {
     isNumeric: {
         ar: () => 'فقط الأحرف الرقمية مسموحة.',
         en: () => 'Only numeric characters are allowed.'
-    },
-    asyncValidate: {
-        ar: () => 'خدمة التحقق غير متاحة. الرجاء المحاولة لاحقاً.',
-        en: () => 'Validation service is unavailable. Please try again later.'
-    }
-};
+    }};
 
 // This file is a workaround for a bug in web browsers' "native"
 // ES6 importing system which is uncapable of importing "*.json" files.
@@ -98,17 +363,12 @@ function isObject(object) {
   return object !== undefined && object !== null && object.constructor === objectConstructor;
 }
 
-function _readOnlyError(r) { throw new TypeError('"' + r + '" is read-only'); }
-function _typeof$l(o) { "@babel/helpers - typeof"; return _typeof$l = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$l(o); }
-function _classCallCheck$c(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$c(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$l(o.key), o); } }
-function _createClass$c(e, r, t) { return r && _defineProperties$c(e.prototype, r), t && _defineProperties$c(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$l(t) { var i = _toPrimitive$l(t, "string"); return "symbol" == _typeof$l(i) ? i : i + ""; }
-function _toPrimitive$l(t, r) { if ("object" != _typeof$l(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$l(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-
-// Added "possibleLengths" and renamed
-// "country_phone_code_to_countries" to "country_calling_codes".
-var V2 = '1.0.18';
+function _typeof$b(o) { "@babel/helpers - typeof"; return _typeof$b = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$b(o); }
+function _classCallCheck$8(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties$7(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey$a(o.key), o); } }
+function _createClass$8(e, r, t) { return r && _defineProperties$7(e.prototype, r), Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _toPropertyKey$a(t) { var i = _toPrimitive$a(t, "string"); return "symbol" == _typeof$b(i) ? i : i + ""; }
+function _toPrimitive$a(t, r) { if ("object" != _typeof$b(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$b(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return (String )(t); }
 
 // Added "idd_prefix" and "default_idd_prefix".
 var V3 = '1.2.0';
@@ -121,14 +381,14 @@ var CALLING_CODE_REG_EXP = /^\d+$/;
 /**
  * See: https://gitlab.com/catamphetamine/libphonenumber-js/blob/master/METADATA.md
  */
-var Metadata$1 = /*#__PURE__*/function () {
+var Metadata = /*#__PURE__*/function () {
   function Metadata(metadata) {
-    _classCallCheck$c(this, Metadata);
+    _classCallCheck$8(this, Metadata);
     validateMetadata(metadata);
     this.metadata = metadata;
     setVersion.call(this, metadata);
   }
-  return _createClass$c(Metadata, [{
+  return _createClass$8(Metadata, [{
     key: "getCountries",
     value: function getCountries() {
       return Object.keys(this.metadata.countries).filter(function (_) {
@@ -369,12 +629,12 @@ var Metadata$1 = /*#__PURE__*/function () {
 }();
 var NumberingPlan = /*#__PURE__*/function () {
   function NumberingPlan(metadata, globalMetadataObject) {
-    _classCallCheck$c(this, NumberingPlan);
+    _classCallCheck$8(this, NumberingPlan);
     this.globalMetadataObject = globalMetadataObject;
     this.metadata = metadata;
     setVersion.call(this, globalMetadataObject.metadata);
   }
-  return _createClass$c(NumberingPlan, [{
+  return _createClass$8(NumberingPlan, [{
     key: "callingCode",
     value: function callingCode() {
       return this.metadata[0];
@@ -529,11 +789,11 @@ var NumberingPlan = /*#__PURE__*/function () {
 }();
 var Format = /*#__PURE__*/function () {
   function Format(format, metadata) {
-    _classCallCheck$c(this, Format);
+    _classCallCheck$8(this, Format);
     this._format = format;
     this.metadata = metadata;
   }
-  return _createClass$c(Format, [{
+  return _createClass$8(Format, [{
     key: "pattern",
     value: function pattern() {
       return this._format[0];
@@ -597,11 +857,11 @@ var Format = /*#__PURE__*/function () {
 var FIRST_GROUP_ONLY_PREFIX_PATTERN = /^\(?\$1\)?$/;
 var Type = /*#__PURE__*/function () {
   function Type(type, metadata) {
-    _classCallCheck$c(this, Type);
+    _classCallCheck$8(this, Type);
     this.type = type;
     this.metadata = metadata;
   }
-  return _createClass$c(Type, [{
+  return _createClass$8(Type, [{
     key: "pattern",
     value: function pattern() {
       if (this.metadata.v1) return this.type;
@@ -656,25 +916,8 @@ function validateMetadata(metadata) {
 // so istanbul will show this as "branch not covered".
 /* istanbul ignore next */
 var typeOf = function typeOf(_) {
-  return _typeof$l(_);
+  return _typeof$b(_);
 };
-
-/**
- * Returns extension prefix for a country.
- * @param  {string} country
- * @param  {object} metadata
- * @return {string?}
- * @example
- * // Returns " ext. "
- * getExtPrefix("US")
- */
-function getExtPrefix$1(country, metadata) {
-  metadata = new Metadata$1(metadata);
-  if (metadata.hasCountry(country)) {
-    return metadata.selectNumberingPlan(country).ext();
-  }
-  return DEFAULT_EXT_PREFIX;
-}
 
 /**
  * Returns "country calling code" for a country.
@@ -686,17 +929,12 @@ function getExtPrefix$1(country, metadata) {
  * // Returns "44"
  * getCountryCallingCode("GB")
  */
-function getCountryCallingCode$1(country, metadata) {
-  metadata = new Metadata$1(metadata);
+function getCountryCallingCode(country, metadata) {
+  metadata = new Metadata(metadata);
   if (metadata.hasCountry(country)) {
     return metadata.selectNumberingPlan(country).countryCallingCode();
   }
   throw new Error("Unknown country: ".concat(country));
-}
-function isSupportedCountry$1(country, metadata) {
-  // metadata = new Metadata(metadata)
-  // return metadata.hasCountry(country)
-  return metadata.countries.hasOwnProperty(country);
 }
 function setVersion(metadata) {
   var version = metadata.version;
@@ -722,35 +960,6 @@ function setVersion(metadata) {
 // function isCountryCode(countryCode) {
 // 	return ISO_COUNTRY_CODE.test(countryCodeOrCountryCallingCode)
 // }
-
-function _createForOfIteratorHelperLoose$a(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$d(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$d(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$d(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$d(r, a) : void 0; } }
-function _arrayLikeToArray$d(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-/**
- * Merges two arrays.
- * @param  {*} a
- * @param  {*} b
- * @return {*}
- */
-function mergeArrays(a, b) {
-  var merged = a.slice();
-  for (var _iterator = _createForOfIteratorHelperLoose$a(b), _step; !(_step = _iterator()).done;) {
-    var element = _step.value;
-    if (a.indexOf(element) < 0) {
-      merged.push(element);
-    }
-  }
-  return merged.sort(function (a, b) {
-    return a - b;
-  });
-
-  // ES6 version, requires Set polyfill.
-  // let merged = new Set(a)
-  // for (const element of b) {
-  // 	merged.add(i)
-  // }
-  // return Array.from(merged).sort((a, b) => a - b)
-}
 
 function checkNumberLength(nationalNumber, country, metadata) {
   return checkNumberLengthForType(nationalNumber, country, undefined, metadata);
@@ -787,7 +996,7 @@ function checkNumberLengthForType(nationalNumber, country, type, metadata) {
   // Most likely, in cases when there're multiple countries corresponding to the same
   // "country calling code", the "main" country for that "country calling code" will be selected.
   if (country) {
-    metadata = new Metadata$1(metadata.metadata);
+    metadata = new Metadata(metadata.metadata);
     metadata.selectNumberingPlan(country);
   }
   var type_info = metadata.type(type);
@@ -805,37 +1014,6 @@ function checkNumberLengthForType(nationalNumber, country, type, metadata) {
   // Metadata before version `1.0.18` didn't contain `possible_lengths`.
   if (!possible_lengths) {
     return 'IS_POSSIBLE';
-  }
-  if (type === 'FIXED_LINE_OR_MOBILE') {
-    // No such country in metadata.
-    /* istanbul ignore next */
-    if (!metadata.type('FIXED_LINE')) {
-      // The rare case has been encountered where no fixedLine data is available
-      // (true for some non-geographic entities), so we just check mobile.
-      return checkNumberLengthForType(nationalNumber, country, 'MOBILE', metadata);
-    }
-    var mobile_type = metadata.type('MOBILE');
-    if (mobile_type) {
-      // Merge the mobile data in if there was any. "Concat" creates a new
-      // array, it doesn't edit possible_lengths in place, so we don't need a copy.
-      // Note that when adding the possible lengths from mobile, we have
-      // to again check they aren't empty since if they are this indicates
-      // they are the same as the general desc and should be obtained from there.
-      possible_lengths = mergeArrays(possible_lengths, mobile_type.possibleLengths());
-      // The current list is sorted; we need to merge in the new list and
-      // re-sort (duplicates are okay). Sorting isn't so expensive because
-      // the lists are very small.
-
-      // if (local_lengths) {
-      // 	local_lengths = mergeArrays(local_lengths, mobile_type.possibleLengthsLocal())
-      // } else {
-      // 	local_lengths = mobile_type.possibleLengthsLocal()
-      // }
-    }
-  }
-  // If the type doesn't exist then return 'INVALID_LENGTH'.
-  else if (type && !type_info) {
-    return 'INVALID_LENGTH';
   }
   var actual_length = nationalNumber.length;
 
@@ -875,12 +1053,12 @@ function checkNumberLengthForType(nationalNumber, country, type, metadata) {
  * @param  {object} metadata
  * @return {string}
  */
-function isPossiblePhoneNumber$2(input, options, metadata) {
+function isPossiblePhoneNumber(input, options, metadata) {
   /* istanbul ignore if */
   if (options === undefined) {
     options = {};
   }
-  metadata = new Metadata$1(metadata);
+  metadata = new Metadata(metadata);
   if (options.v2) {
     if (!input.countryCallingCode) {
       throw new Error('Invalid phone number object passed');
@@ -905,7 +1083,7 @@ function isPossiblePhoneNumber$2(input, options, metadata) {
 
   // Old metadata (< 1.0.18) had no "possible length" data.
   if (metadata.possibleLengths()) {
-    return isPossibleNumber$2(input.phone || input.nationalNumber, input.country, metadata);
+    return isPossibleNumber(input.phone || input.nationalNumber, input.country, metadata);
   } else {
     // There was a bug between `1.7.35` and `1.7.37` where "possible_lengths"
     // were missing for "non-geographical" numbering plans.
@@ -922,7 +1100,7 @@ function isPossiblePhoneNumber$2(input, options, metadata) {
     }
   }
 }
-function isPossibleNumber$2(nationalNumber, country, metadata) {
+function isPossibleNumber(nationalNumber, country, metadata) {
   //, isInternational) {
   switch (checkNumberLength(nationalNumber, country, metadata)) {
     case 'IS_POSSIBLE':
@@ -948,13 +1126,13 @@ function matchesEntirely(text, regularExpressionText) {
   return new RegExp('^(?:' + regularExpressionText + ')$').test(text);
 }
 
-function _createForOfIteratorHelperLoose$9(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$c(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$c(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$c(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$c(r, a) : void 0; } }
-function _arrayLikeToArray$c(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _createForOfIteratorHelperLoose$6(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$9(r)) || e) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: true } : { done: false, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$9(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$9(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$9(r, a) : void 0; } }
+function _arrayLikeToArray$9(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 var NON_FIXED_LINE_PHONE_TYPES = ['MOBILE', 'PREMIUM_RATE', 'TOLL_FREE', 'SHARED_COST', 'VOIP', 'PERSONAL_NUMBER', 'PAGER', 'UAN', 'VOICEMAIL'];
 
 // Finds out national phone number type (fixed line, mobile, etc)
-function getNumberType$2(input, options, metadata) {
+function getNumberType(input, options, metadata) {
   // If assigning the `{}` default value is moved to the arguments above,
   // code coverage would decrease for some weird reason.
   options = options || {};
@@ -965,7 +1143,7 @@ function getNumberType$2(input, options, metadata) {
   if (!input.country && !input.countryCallingCode) {
     return;
   }
-  metadata = new Metadata$1(metadata);
+  metadata = new Metadata(metadata);
   metadata.selectNumberingPlan(input.country, input.countryCallingCode);
   var nationalNumber = options.v2 ? input.nationalNumber : input.phone;
 
@@ -1006,7 +1184,7 @@ function getNumberType$2(input, options, metadata) {
     }
     return 'FIXED_LINE';
   }
-  for (var _iterator = _createForOfIteratorHelperLoose$9(NON_FIXED_LINE_PHONE_TYPES), _step; !(_step = _iterator()).done;) {
+  for (var _iterator = _createForOfIteratorHelperLoose$6(NON_FIXED_LINE_PHONE_TYPES), _step; !(_step = _iterator()).done;) {
     var type = _step.value;
     if (isNumberTypeEqualTo(nationalNumber, type, metadata)) {
       return type;
@@ -1064,17 +1242,17 @@ function isNumberTypeEqualTo(nationalNumber, type, metadata) {
  * isValidNumber({ phone: '8005553535', country: 'RU' }, metadata)
  * ```
  */
-function isValidNumber$2(input, options, metadata) {
+function isValidNumber(input, options, metadata) {
   // If assigning the `{}` default value is moved to the arguments above,
   // code coverage would decrease for some weird reason.
   options = options || {};
-  metadata = new Metadata$1(metadata);
+  metadata = new Metadata(metadata);
   metadata.selectNumberingPlan(input.country, input.countryCallingCode);
 
   // By default, countries only have type regexps when it's required for
   // distinguishing different countries having the same `countryCallingCode`.
   if (metadata.hasTypes()) {
-    return getNumberType$2(input, options, metadata.metadata) !== undefined;
+    return getNumberType(input, options, metadata.metadata) !== undefined;
   }
 
   // If there are no type regexps for this country in metadata then use
@@ -1091,7 +1269,7 @@ function isValidNumber$2(input, options, metadata) {
  * @return {string[]} A list of possible countries.
  */
 function getPossibleCountriesForNumber(callingCode, nationalNumber, metadata) {
-  var _metadata = new Metadata$1(metadata);
+  var _metadata = new Metadata(metadata);
   var possibleCountries = _metadata.getCountryCodesForCallingCode(callingCode);
   if (!possibleCountries) {
     return [];
@@ -1101,7 +1279,7 @@ function getPossibleCountriesForNumber(callingCode, nationalNumber, metadata) {
   });
 }
 function couldNationalNumberBelongToCountry(nationalNumber, country, metadata) {
-  var _metadata = new Metadata$1(metadata);
+  var _metadata = new Metadata(metadata);
   _metadata.selectNumberingPlan(country);
   if (_metadata.numberingPlan.possibleLengths().indexOf(nationalNumber.length) >= 0) {
     return true;
@@ -1146,7 +1324,7 @@ function stripIddPrefix(number, country, callingCode, metadata) {
     return;
   }
   // Check if the number is IDD-prefixed.
-  var countryMetadata = new Metadata$1(metadata);
+  var countryMetadata = new Metadata(metadata);
   countryMetadata.selectNumberingPlan(country, callingCode);
   var IDDPrefixPattern = new RegExp(countryMetadata.IDDPrefix());
   if (number.search(IDDPrefixPattern) !== 0) {
@@ -1269,9 +1447,9 @@ function extractNationalNumberFromPossiblyIncompleteNumber(number, metadata) {
   };
 }
 
-function _createForOfIteratorHelperLoose$8(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$b(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$b(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$b(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$b(r, a) : void 0; } }
-function _arrayLikeToArray$b(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _createForOfIteratorHelperLoose$5(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$8(r)) || e) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: true } : { done: false, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$8(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$8(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$8(r, a) : void 0; } }
+function _arrayLikeToArray$8(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 
 // Returns the exact country that the `nationalPhoneNumber` belongs to
 // in cases of ambiguity, i.e. when multiple countries share the same "country calling code".
@@ -1279,11 +1457,11 @@ function getCountryByNationalNumber(nationalPhoneNumber, _ref) {
   var countries = _ref.countries,
     metadata = _ref.metadata;
   // Re-create `metadata` because it will be selecting a `country`.
-  metadata = new Metadata$1(metadata);
+  metadata = new Metadata(metadata);
 
   // const matchingCountries = []
 
-  for (var _iterator = _createForOfIteratorHelperLoose$8(countries), _step; !(_step = _iterator()).done;) {
+  for (var _iterator = _createForOfIteratorHelperLoose$5(countries), _step; !(_step = _iterator()).done;) {
     var country = _step.value;
     metadata.selectNumberingPlan(country);
     // "Leading digits" patterns are only defined for about 20% of all countries.
@@ -1300,7 +1478,7 @@ function getCountryByNationalNumber(nationalPhoneNumber, _ref) {
     }
     // Else perform full validation with all of those
     // fixed-line/mobile/etc regular expressions.
-    else if (getNumberType$2({
+    else if (getNumberType({
       phone: nationalPhoneNumber,
       country: country
     }, undefined, metadata.metadata)) {
@@ -1346,19 +1524,11 @@ function getCountryByNationalNumber(nationalPhoneNumber, _ref) {
   // }
 }
 
-var USE_NON_GEOGRAPHIC_COUNTRY_CODE$4 = false;
-
 // Returns the exact country for the `nationalNumber`
 // that belongs to the specified "country calling code".
 function getCountryByCallingCode(callingCode, _ref) {
   var nationalPhoneNumber = _ref.nationalNumber,
     metadata = _ref.metadata;
-  /* istanbul ignore if */
-  if (USE_NON_GEOGRAPHIC_COUNTRY_CODE$4) {
-    if (metadata.isNonGeographicCallingCode(callingCode)) {
-      return '001';
-    }
-  }
   var possibleCountries = metadata.getCountryCodesForCallingCode(callingCode);
   if (!possibleCountries) {
     return;
@@ -1485,8 +1655,6 @@ function isPossibleIncompleteNationalNumber(nationalNumber, country, metadata) {
   }
 }
 
-// Deprecated. Import from 'metadata.js' directly instead.
-
 /**
  * Sometimes some people incorrectly input international phone numbers
  * without the leading `+`. This function corrects such input.
@@ -1498,9 +1666,9 @@ function isPossibleIncompleteNationalNumber(nationalNumber, country, metadata) {
  * @return {object} `{ countryCallingCode: string?, number: string }`.
  */
 function extractCountryCallingCodeFromInternationalNumberWithoutPlusSign(number, country, defaultCountry, defaultCallingCode, metadata) {
-  var countryCallingCode = country || defaultCountry ? getCountryCallingCode$1(country || defaultCountry, metadata) : defaultCallingCode;
+  var countryCallingCode = country || defaultCountry ? getCountryCallingCode(country || defaultCountry, metadata) : defaultCallingCode;
   if (number.indexOf(countryCallingCode) === 0) {
-    metadata = new Metadata$1(metadata);
+    metadata = new Metadata(metadata);
     metadata.selectNumberingPlan(country || defaultCountry, countryCallingCode);
     var possibleShorterNumber = number.slice(countryCallingCode.length);
     var _extractNationalNumbe = extractNationalNumber(possibleShorterNumber, country, metadata),
@@ -1601,7 +1769,7 @@ function extractCountryCallingCode(number, country, defaultCountry, defaultCalli
   if (number[1] === '0') {
     return {};
   }
-  metadata = new Metadata$1(metadata);
+  metadata = new Metadata(metadata);
 
   // The thing with country phone codes
   // is that they are orthogonal to each other
@@ -1705,9 +1873,7 @@ function applyInternationalSeparatorStyle(formattedNumber) {
 var FIRST_GROUP_PATTERN = /(\$\d)/;
 function formatNationalNumberUsingFormat(number, format, _ref) {
   var useInternationalFormat = _ref.useInternationalFormat,
-    withNationalPrefix = _ref.withNationalPrefix,
-    carrierCode = _ref.carrierCode,
-    metadata = _ref.metadata;
+    withNationalPrefix = _ref.withNationalPrefix;
   var formattedNumber = number.replace(new RegExp(format.pattern()), useInternationalFormat ? format.internationalFormat() :
   // This library doesn't use `domestic_carrier_code_formatting_rule`,
   // because that one is only used when formatting phone numbers
@@ -1743,7 +1909,7 @@ var SINGLE_IDD_PREFIX_REG_EXP = /^[\d]+(?:[~\u2053\u223C\uFF5E][\d]+)?$/;
 // For regions that have multiple IDD prefixes
 // a preferred IDD prefix is returned.
 function getIddPrefix(country, callingCode, metadata) {
-  var countryMetadata = new Metadata$1(metadata);
+  var countryMetadata = new Metadata(metadata);
   countryMetadata.selectNumberingPlan(country, callingCode);
   if (countryMetadata.defaultIDDPrefix()) {
     return countryMetadata.defaultIDDPrefix();
@@ -1920,62 +2086,6 @@ function isViablePhoneNumberStart(number) {
   return VALID_PHONE_NUMBER_START_REG_EXP.test(number);
 }
 
-function _slicedToArray$3(r, e) { return _arrayWithHoles$3(r) || _iterableToArrayLimit$3(r, e) || _unsupportedIterableToArray$a(r, e) || _nonIterableRest$3(); }
-function _nonIterableRest$3() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit$3(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles$3(r) { if (Array.isArray(r)) return r; }
-function _createForOfIteratorHelperLoose$7(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$a(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$a(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$a(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$a(r, a) : void 0; } }
-function _arrayLikeToArray$a(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-
-// https://www.ietf.org/rfc/rfc3966.txt
-
-/**
- * @param  {string} text - Phone URI (RFC 3966).
- * @return {object} `{ ?number, ?ext }`.
- */
-function parseRFC3966(text) {
-  var number;
-  var ext;
-
-  // Replace "tel:" with "tel=" for parsing convenience.
-  text = text.replace(/^tel:/, 'tel=');
-  for (var _iterator = _createForOfIteratorHelperLoose$7(text.split(';')), _step; !(_step = _iterator()).done;) {
-    var part = _step.value;
-    var _part$split = part.split('='),
-      _part$split2 = _slicedToArray$3(_part$split, 2),
-      name = _part$split2[0],
-      value = _part$split2[1];
-    switch (name) {
-      case 'tel':
-        number = value;
-        break;
-      case 'ext':
-        ext = value;
-        break;
-      case 'phone-context':
-        // Only "country contexts" are supported.
-        // "Domain contexts" are ignored.
-        if (value[0] === '+') {
-          number = value + number;
-        }
-        break;
-    }
-  }
-
-  // If the phone number is not viable, then abort.
-  if (!isViablePhoneNumber(number)) {
-    return {};
-  }
-  var result = {
-    number: number
-  };
-  if (ext) {
-    result.ext = ext;
-  }
-  return result;
-}
-
 /**
  * @param  {object} - `{ ?number, ?extension }`.
  * @return {string} Phone URI (RFC 3966).
@@ -2018,7 +2128,7 @@ var DEFAULT_OPTIONS = {
  * @param  {object} metadata
  * @return {string}
  */
-function formatNumber$2(input, format, options, metadata) {
+function formatNumber(input, format, options, metadata) {
   // Apply default options.
   if (options) {
     // Using ES6 "rest spread" syntax here didn't work with `babel`/`istanbul`
@@ -2032,7 +2142,7 @@ function formatNumber$2(input, format, options, metadata) {
   } else {
     options = DEFAULT_OPTIONS;
   }
-  metadata = new Metadata$1(metadata);
+  metadata = new Metadata(metadata);
   if (input.country && input.country !== '001') {
     // Validate `input.country`.
     if (!metadata.hasCountry(input.country)) {
@@ -2097,10 +2207,7 @@ function formatNationalNumber$1(number, carrierCode, formatAs, metadata, options
   }
   return formatNationalNumberUsingFormat(number, format, {
     useInternationalFormat: formatAs === 'INTERNATIONAL',
-    withNationalPrefix: format.nationalPrefixIsOptionalWhenFormattingInNationalFormat() && options && options.nationalPrefix === false ? false : true,
-    carrierCode: carrierCode,
-    metadata: metadata
-  });
+    withNationalPrefix: format.nationalPrefixIsOptionalWhenFormattingInNationalFormat() && options && options.nationalPrefix === false ? false : true});
 }
 function chooseFormatForNumber(availableFormats, nationalNumber) {
   // Using a `for ... of` loop here didn't work with `babel`/`istanbul`:
@@ -2130,7 +2237,7 @@ function addExtension(formattedNumber, ext, metadata, formatExtension) {
   return ext ? formatExtension(formattedNumber, ext, metadata) : formattedNumber;
 }
 function formatIDD(nationalNumber, carrierCode, countryCallingCode, fromCountry, metadata) {
-  var fromCountryCallingCode = getCountryCallingCode$1(fromCountry, metadata.metadata);
+  var fromCountryCallingCode = getCountryCallingCode(fromCountry, metadata.metadata);
   // When calling within the same country calling code.
   if (fromCountryCallingCode === countryCallingCode) {
     var formattedNumber = formatNationalNumber$1(nationalNumber, carrierCode, 'NATIONAL', metadata);
@@ -2180,17 +2287,16 @@ function pickFirstMatchingElement(elements, testFunction) {
   }
 }
 
-function _typeof$k(o) { "@babel/helpers - typeof"; return _typeof$k = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$k(o); }
-function ownKeys$8(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread$8(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$8(Object(t), !0).forEach(function (r) { _defineProperty$9(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$8(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty$9(e, r, t) { return (r = _toPropertyKey$k(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _classCallCheck$b(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$b(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$k(o.key), o); } }
-function _createClass$b(e, r, t) { return r && _defineProperties$b(e.prototype, r), t && _defineProperties$b(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$k(t) { var i = _toPrimitive$k(t, "string"); return "symbol" == _typeof$k(i) ? i : i + ""; }
-function _toPrimitive$k(t, r) { if ("object" != _typeof$k(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$k(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var USE_NON_GEOGRAPHIC_COUNTRY_CODE$3 = false;
-var PhoneNumber$1 = /*#__PURE__*/function () {
+function _typeof$a(o) { "@babel/helpers - typeof"; return _typeof$a = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$a(o); }
+function ownKeys$3(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread$3(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$3(Object(t), true).forEach(function (r) { _defineProperty$3(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$3(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty$3(e, r, t) { return (r = _toPropertyKey$9(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: true, configurable: true, writable: true }) : e[r] = t, e; }
+function _classCallCheck$7(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties$6(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey$9(o.key), o); } }
+function _createClass$7(e, r, t) { return r && _defineProperties$6(e.prototype, r), Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _toPropertyKey$9(t) { var i = _toPrimitive$9(t, "string"); return "symbol" == _typeof$a(i) ? i : i + ""; }
+function _toPrimitive$9(t, r) { if ("object" != _typeof$a(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$a(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return (String )(t); }
+var PhoneNumber = /*#__PURE__*/function () {
   /**
    * @param  {string} countryOrCountryCallingCode
    * @param  {string} nationalNumber
@@ -2198,7 +2304,7 @@ var PhoneNumber$1 = /*#__PURE__*/function () {
    * @return {PhoneNumber}
    */
   function PhoneNumber(countryOrCountryCallingCode, nationalNumber, metadata) {
-    _classCallCheck$b(this, PhoneNumber);
+    _classCallCheck$7(this, PhoneNumber);
     // Validate `countryOrCountryCallingCode` argument.
     if (!countryOrCountryCallingCode) {
       throw new TypeError('First argument is required');
@@ -2256,7 +2362,7 @@ var PhoneNumber$1 = /*#__PURE__*/function () {
       return metadata;
     };
   }
-  return _createClass$b(PhoneNumber, [{
+  return _createClass$7(PhoneNumber, [{
     key: "setExt",
     value: function setExt(ext) {
       this.ext = ext;
@@ -2272,21 +2378,21 @@ var PhoneNumber$1 = /*#__PURE__*/function () {
   }, {
     key: "isPossible",
     value: function isPossible() {
-      return isPossiblePhoneNumber$2(this, {
+      return isPossiblePhoneNumber(this, {
         v2: true
       }, this.getMetadata());
     }
   }, {
     key: "isValid",
     value: function isValid() {
-      return isValidNumber$2(this, {
+      return isValidNumber(this, {
         v2: true
       }, this.getMetadata());
     }
   }, {
     key: "isNonGeographic",
     value: function isNonGeographic() {
-      var metadata = new Metadata$1(this.getMetadata());
+      var metadata = new Metadata(this.getMetadata());
       return metadata.isNonGeographicCallingCode(this.countryCallingCode);
     }
   }, {
@@ -2312,14 +2418,14 @@ var PhoneNumber$1 = /*#__PURE__*/function () {
   }, {
     key: "getType",
     value: function getType() {
-      return getNumberType$2(this, {
+      return getNumberType(this, {
         v2: true
       }, this.getMetadata());
     }
   }, {
     key: "format",
     value: function format(_format, options) {
-      return formatNumber$2(this, _format, options ? _objectSpread$8(_objectSpread$8({}, options), {}, {
+      return formatNumber(this, _format, options ? _objectSpread$3(_objectSpread$3({}, options), {}, {
         v2: true
       }) : {
         v2: true
@@ -2348,7 +2454,7 @@ var isCountryCode = function isCountryCode(value) {
 function getCountryAndCountryCallingCode(countryOrCountryCallingCode, metadataJson) {
   var country;
   var countryCallingCode;
-  var metadata = new Metadata$1(metadataJson);
+  var metadata = new Metadata(metadataJson);
   // If country code is passed then derive `countryCallingCode` from it.
   // Also store the country code as `.country`.
   if (isCountryCode(countryOrCountryCallingCode)) {
@@ -2357,12 +2463,6 @@ function getCountryAndCountryCallingCode(countryOrCountryCallingCode, metadataJs
     countryCallingCode = metadata.countryCallingCode();
   } else {
     countryCallingCode = countryOrCountryCallingCode;
-    /* istanbul ignore if */
-    if (USE_NON_GEOGRAPHIC_COUNTRY_CODE$3) {
-      if (metadata.isNonGeographicCallingCode(countryCallingCode)) {
-        country = '001';
-      }
-    }
   }
   return {
     country: country,
@@ -2371,17 +2471,14 @@ function getCountryAndCountryCallingCode(countryOrCountryCallingCode, metadataJs
 }
 var E164_NUMBER_REGEXP = /^\+\d+$/;
 
-function _typeof$j(o) { "@babel/helpers - typeof"; return _typeof$j = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$j(o); }
-function _defineProperties$a(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$j(o.key), o); } }
-function _createClass$a(e, r, t) { return r && _defineProperties$a(e.prototype, r), t && _defineProperties$a(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$j(t) { var i = _toPrimitive$j(t, "string"); return "symbol" == _typeof$j(i) ? i : i + ""; }
-function _toPrimitive$j(t, r) { if ("object" != _typeof$j(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$j(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _classCallCheck$a(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _typeof$9(o) { "@babel/helpers - typeof"; return _typeof$9 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$9(o); }
+function _createClass$6(e, r, t) { return Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _classCallCheck$6(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
-function _possibleConstructorReturn(t, e) { if (e && ("object" == _typeof$j(e) || "function" == typeof e)) return e; if (void 0 !== e) throw new TypeError("Derived constructors may only return object or undefined"); return _assertThisInitialized(t); }
+function _possibleConstructorReturn(t, e) { if (e && ("object" == _typeof$9(e) || "function" == typeof e)) return e; if (void 0 !== e) throw new TypeError("Derived constructors may only return object or undefined"); return _assertThisInitialized(t); }
 function _assertThisInitialized(e) { if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); return e; }
-function _inherits(t, e) { if ("function" != typeof e && null !== e) throw new TypeError("Super expression must either be null or a function"); t.prototype = Object.create(e && e.prototype, { constructor: { value: t, writable: !0, configurable: !0 } }), Object.defineProperty(t, "prototype", { writable: !1 }), e && _setPrototypeOf(t, e); }
-function _wrapNativeSuper(t) { var r = "function" == typeof Map ? new Map() : void 0; return _wrapNativeSuper = function _wrapNativeSuper(t) { if (null === t || !_isNativeFunction(t)) return t; if ("function" != typeof t) throw new TypeError("Super expression must either be null or a function"); if (void 0 !== r) { if (r.has(t)) return r.get(t); r.set(t, Wrapper); } function Wrapper() { return _construct(t, arguments, _getPrototypeOf(this).constructor); } return Wrapper.prototype = Object.create(t.prototype, { constructor: { value: Wrapper, enumerable: !1, writable: !0, configurable: !0 } }), _setPrototypeOf(Wrapper, t); }, _wrapNativeSuper(t); }
+function _inherits(t, e) { if ("function" != typeof e && null !== e) throw new TypeError("Super expression must either be null or a function"); t.prototype = Object.create(e && e.prototype, { constructor: { value: t, writable: true, configurable: true } }), Object.defineProperty(t, "prototype", { writable: false }), e && _setPrototypeOf(t, e); }
+function _wrapNativeSuper(t) { var r = "function" == typeof Map ? new Map() : void 0; return _wrapNativeSuper = function _wrapNativeSuper(t) { if (null === t || !_isNativeFunction(t)) return t; if ("function" != typeof t) throw new TypeError("Super expression must either be null or a function"); if (void 0 !== r) { if (r.has(t)) return r.get(t); r.set(t, Wrapper); } function Wrapper() { return _construct(t, arguments, _getPrototypeOf(this).constructor); } return Wrapper.prototype = Object.create(t.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }), _setPrototypeOf(Wrapper, t); }, _wrapNativeSuper(t); }
 function _construct(t, e, r) { if (_isNativeReflectConstruct()) return Reflect.construct.apply(null, arguments); var o = [null]; o.push.apply(o, e); var p = new (t.bind.apply(t, o))(); return r && _setPrototypeOf(p, r.prototype), p; }
 function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 function _isNativeFunction(t) { try { return -1 !== Function.toString.call(t).indexOf("[native code]"); } catch (n) { return "function" == typeof t; } }
@@ -2395,7 +2492,7 @@ function _getPrototypeOf(t) { return _getPrototypeOf = Object.setPrototypeOf ? O
 var ParseError = /*#__PURE__*/function (_Error) {
   function ParseError(code) {
     var _this;
-    _classCallCheck$a(this, ParseError);
+    _classCallCheck$6(this, ParseError);
     _this = _callSuper(this, ParseError, [code]);
     // Set the prototype explicitly.
     // Any subclass of FooError will have to manually set the prototype as well.
@@ -2404,7 +2501,7 @@ var ParseError = /*#__PURE__*/function (_Error) {
     return _this;
   }
   _inherits(ParseError, _Error);
-  return _createClass$a(ParseError);
+  return _createClass$6(ParseError);
 }(/*#__PURE__*/_wrapNativeSuper(Error));
 
 // Regexp of all known extension prefixes used by different regions followed by
@@ -2435,9 +2532,9 @@ function extractExtension(number) {
   }
 }
 
-function _createForOfIteratorHelperLoose$6(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$9(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$9(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$9(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$9(r, a) : void 0; } }
-function _arrayLikeToArray$9(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _createForOfIteratorHelperLoose$4(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$7(r)) || e) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: true } : { done: false, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$7(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$7(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$7(r, a) : void 0; } }
+function _arrayLikeToArray$7(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 // These mappings map a character (key) to a specific digit that should
 // replace it for normalization purposes. Non-European digits that
 // may be used in phone numbers are mapped to a European equivalent.
@@ -2540,7 +2637,7 @@ function parseDigits(string) {
   // (the ones consisting of four bytes) but digits
   // (including non-European ones) don't fall into that range
   // so such "exotic" characters would be discarded anyway.
-  for (var _iterator = _createForOfIteratorHelperLoose$6(string.split('')), _step; !(_step = _iterator()).done;) {
+  for (var _iterator = _createForOfIteratorHelperLoose$4(string.split('')), _step; !(_step = _iterator()).done;) {
     var character = _step.value;
     var digit = parseDigit(character);
     if (digit) {
@@ -2550,9 +2647,9 @@ function parseDigits(string) {
   return result;
 }
 
-function _createForOfIteratorHelperLoose$5(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$8(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$8(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$8(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$8(r, a) : void 0; } }
-function _arrayLikeToArray$8(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _createForOfIteratorHelperLoose$3(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$6(r)) || e) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: true } : { done: false, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$6(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$6(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$6(r, a) : void 0; } }
+function _arrayLikeToArray$6(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 
 /**
  * Parses phone number characters from a string.
@@ -2577,7 +2674,7 @@ function parseIncompletePhoneNumber(string) {
   // (the ones consisting of four bytes) but digits
   // (including non-European ones) don't fall into that range
   // so such "exotic" characters would be discarded anyway.
-  for (var _iterator = _createForOfIteratorHelperLoose$5(string.split('')), _step; !(_step = _iterator()).done;) {
+  for (var _iterator = _createForOfIteratorHelperLoose$3(string.split('')), _step; !(_step = _iterator()).done;) {
     var character = _step.value;
     result += parsePhoneNumberCharacter(character, result) || '';
   }
@@ -2601,20 +2698,6 @@ function parsePhoneNumberCharacter(character, prevParsedCharacters, eventListene
     // If this `+` is not the first parsed character
     // then discard it.
     if (prevParsedCharacters) {
-      // `eventListener` argument was added to this `export`ed function on Dec 26th, 2023.
-      // Any 3rd-party code that used to `import` and call this function before that
-      // won't be passing any `eventListener` argument.
-      //
-      // The addition of the `eventListener` argument was to fix the slightly-weird behavior
-      // of parsing an input string when the user inputs something like `"2+7"
-      // https://github.com/catamphetamine/react-phone-number-input/issues/437
-      //
-      // If the parser encounters an unexpected `+` in a string being parsed
-      // then it simply discards that out-of-place `+` and any following characters.
-      //
-      if (typeof eventListener === 'function') {
-        eventListener('end');
-      }
       return;
     }
     return '+';
@@ -2781,7 +2864,6 @@ var PHONE_NUMBER_START_PATTERN = new RegExp('[' + PLUS_CHARS + VALID_DIGITS + ']
 // A trailing `#` is sometimes used when writing phone numbers with extensions in US.
 // Example: "+1 (645) 123 1234-910#" number has extension "910".
 var AFTER_PHONE_NUMBER_END_PATTERN = new RegExp('[^' + VALID_DIGITS + '#' + ']+$');
-var USE_NON_GEOGRAPHIC_COUNTRY_CODE$2 = false;
 
 // Examples:
 //
@@ -2807,11 +2889,11 @@ var USE_NON_GEOGRAPHIC_COUNTRY_CODE$2 = false;
  * @param  {object} metadata
  * @return {object|PhoneNumber?} If `options.v2: true` flag is passed, it returns a `PhoneNumber?` instance. Otherwise, returns an object of shape `{ phone: '...', country: '...' }` (or just `{}` if no phone number was parsed).
  */
-function parse$1(text, options, metadata) {
+function parse(text, options, metadata) {
   // If assigning the `{}` default value is moved to the arguments above,
   // code coverage would decrease for some weird reason.
   options = options || {};
-  metadata = new Metadata$1(metadata);
+  metadata = new Metadata(metadata);
 
   // Validate `defaultCountry`.
   if (options.defaultCountry && !metadata.hasCountry(options.defaultCountry)) {
@@ -2837,7 +2919,7 @@ function parse$1(text, options, metadata) {
     }
     return {};
   }
-  var _parsePhoneNumber = parsePhoneNumber$3(formattedPhoneNumber, options.defaultCountry, options.defaultCallingCode, metadata),
+  var _parsePhoneNumber = parsePhoneNumber(formattedPhoneNumber, options.defaultCountry, options.defaultCallingCode, metadata),
     country = _parsePhoneNumber.country,
     nationalNumber = _parsePhoneNumber.nationalNumber,
     countryCallingCode = _parsePhoneNumber.countryCallingCode,
@@ -2878,7 +2960,7 @@ function parse$1(text, options, metadata) {
     return {};
   }
   if (options.v2) {
-    var phoneNumber = new PhoneNumber$1(countryCallingCode, nationalNumber, metadata.metadata);
+    var phoneNumber = new PhoneNumber(countryCallingCode, nationalNumber, metadata.metadata);
     if (country) {
       phoneNumber.country = country;
     }
@@ -2907,7 +2989,7 @@ function parse$1(text, options, metadata) {
     countryCallingCode: countryCallingCode,
     carrierCode: carrierCode,
     valid: valid,
-    possible: valid ? true : options.extended === true && metadata.possibleLengths() && isPossibleNumber$2(nationalNumber, country, metadata) ? true : false,
+    possible: valid ? true : options.extended === true && metadata.possibleLengths() && isPossibleNumber(nationalNumber, country, metadata) ? true : false,
     phone: nationalNumber,
     ext: ext
   };
@@ -3012,7 +3094,7 @@ function result(country, nationalNumber, ext) {
  * @param {Metadata} metadata
  * @return {object} Returns `{ country: string?, countryCallingCode: string?, nationalNumber: string? }`.
  */
-function parsePhoneNumber$3(formattedPhoneNumber, defaultCountry, defaultCallingCode, metadata) {
+function parsePhoneNumber(formattedPhoneNumber, defaultCountry, defaultCallingCode, metadata) {
   // Extract calling code from phone number.
   var _extractCountryCallin = extractCountryCallingCode(parseIncompletePhoneNumber(formattedPhoneNumber), undefined, defaultCountry, defaultCallingCode, metadata.metadata),
     countryCallingCodeSource = _extractCountryCallin.countryCallingCodeSource,
@@ -3033,15 +3115,8 @@ function parsePhoneNumber$3(formattedPhoneNumber, defaultCountry, defaultCalling
     metadata.selectNumberingPlan(defaultCountry, defaultCallingCode);
     if (defaultCountry) {
       country = defaultCountry;
-    } else {
-      /* istanbul ignore if */
-      if (USE_NON_GEOGRAPHIC_COUNTRY_CODE$2) {
-        if (metadata.isNonGeographicCallingCode(defaultCallingCode)) {
-          country = '001';
-        }
-      }
     }
-    countryCallingCode = defaultCallingCode || getCountryCallingCode$1(defaultCountry, metadata.metadata);
+    countryCallingCode = defaultCallingCode || getCountryCallingCode(defaultCountry, metadata.metadata);
   } else return {};
   if (!number) {
     return {
@@ -3070,11 +3145,7 @@ function parsePhoneNumber$3(formattedPhoneNumber, defaultCountry, defaultCalling
   if (exactCountry) {
     country = exactCountry;
     /* istanbul ignore if */
-    if (exactCountry === '001') {
-      // Can't happen with `USE_NON_GEOGRAPHIC_COUNTRY_CODE` being `false`.
-      // If `USE_NON_GEOGRAPHIC_COUNTRY_CODE` is set to `true` for some reason,
-      // then remove the "istanbul ignore if".
-    } else {
+    if (exactCountry === '001') ; else {
       metadata.selectNumberingPlan(country);
     }
   }
@@ -3087,36 +3158,36 @@ function parsePhoneNumber$3(formattedPhoneNumber, defaultCountry, defaultCalling
   };
 }
 
-function _typeof$i(o) { "@babel/helpers - typeof"; return _typeof$i = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$i(o); }
-function ownKeys$7(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread$7(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$7(Object(t), !0).forEach(function (r) { _defineProperty$8(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$7(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty$8(e, r, t) { return (r = _toPropertyKey$i(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$i(t) { var i = _toPrimitive$i(t, "string"); return "symbol" == _typeof$i(i) ? i : i + ""; }
-function _toPrimitive$i(t, r) { if ("object" != _typeof$i(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$i(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function parsePhoneNumberWithError$2(text, options, metadata) {
-  return parse$1(text, _objectSpread$7(_objectSpread$7({}, options), {}, {
+function _typeof$8(o) { "@babel/helpers - typeof"; return _typeof$8 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$8(o); }
+function ownKeys$2(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread$2(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$2(Object(t), true).forEach(function (r) { _defineProperty$2(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$2(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty$2(e, r, t) { return (r = _toPropertyKey$8(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: true, configurable: true, writable: true }) : e[r] = t, e; }
+function _toPropertyKey$8(t) { var i = _toPrimitive$8(t, "string"); return "symbol" == _typeof$8(i) ? i : i + ""; }
+function _toPrimitive$8(t, r) { if ("object" != _typeof$8(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$8(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function parsePhoneNumberWithError(text, options, metadata) {
+  return parse(text, _objectSpread$2(_objectSpread$2({}, options), {}, {
     v2: true
   }), metadata);
 }
 
-function _typeof$h(o) { "@babel/helpers - typeof"; return _typeof$h = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$h(o); }
-function ownKeys$6(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread$6(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$6(Object(t), !0).forEach(function (r) { _defineProperty$7(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$6(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty$7(e, r, t) { return (r = _toPropertyKey$h(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$h(t) { var i = _toPrimitive$h(t, "string"); return "symbol" == _typeof$h(i) ? i : i + ""; }
-function _toPrimitive$h(t, r) { if ("object" != _typeof$h(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$h(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _slicedToArray$2(r, e) { return _arrayWithHoles$2(r) || _iterableToArrayLimit$2(r, e) || _unsupportedIterableToArray$7(r, e) || _nonIterableRest$2(); }
+function _typeof$7(o) { "@babel/helpers - typeof"; return _typeof$7 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$7(o); }
+function ownKeys$1(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread$1(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$1(Object(t), true).forEach(function (r) { _defineProperty$1(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$1(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty$1(e, r, t) { return (r = _toPropertyKey$7(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: true, configurable: true, writable: true }) : e[r] = t, e; }
+function _toPropertyKey$7(t) { var i = _toPrimitive$7(t, "string"); return "symbol" == _typeof$7(i) ? i : i + ""; }
+function _toPrimitive$7(t, r) { if ("object" != _typeof$7(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$7(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _slicedToArray$2(r, e) { return _arrayWithHoles$2(r) || _iterableToArrayLimit$2(r, e) || _unsupportedIterableToArray$5(r, e) || _nonIterableRest$2(); }
 function _nonIterableRest$2() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$7(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$7(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$7(r, a) : void 0; } }
-function _arrayLikeToArray$7(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit$2(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _unsupportedIterableToArray$5(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$5(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$5(r, a) : void 0; } }
+function _arrayLikeToArray$5(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit$2(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = true, o = false; try { if (i = (t = t.call(r)).next, 0 === l) ; else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = true); } catch (r) { o = true, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles$2(r) { if (Array.isArray(r)) return r; }
 
 // Extracts the following properties from function arguments:
 // * input `text`
 // * `options` object
 // * `metadata` JSON
-function normalizeArguments$2(args) {
+function normalizeArguments(args) {
   var _Array$prototype$slic = Array.prototype.slice.call(args),
     _Array$prototype$slic2 = _slicedToArray$2(_Array$prototype$slic, 4),
     arg_1 = _Array$prototype$slic2[0],
@@ -3144,7 +3215,7 @@ function normalizeArguments$2(args) {
       metadata = arg_3;
     }
     if (arg_2) {
-      options = _objectSpread$6({
+      options = _objectSpread$1({
         defaultCountry: arg_2
       }, options);
     }
@@ -3166,103 +3237,25 @@ function normalizeArguments$2(args) {
   };
 }
 
-function parsePhoneNumberWithError$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  return parsePhoneNumberWithError$2(text, options, metadata);
-}
-
-function _typeof$g(o) { "@babel/helpers - typeof"; return _typeof$g = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$g(o); }
-function ownKeys$5(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread$5(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$5(Object(t), !0).forEach(function (r) { _defineProperty$6(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$5(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty$6(e, r, t) { return (r = _toPropertyKey$g(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$g(t) { var i = _toPrimitive$g(t, "string"); return "symbol" == _typeof$g(i) ? i : i + ""; }
-function _toPrimitive$g(t, r) { if ("object" != _typeof$g(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$g(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function parsePhoneNumber$2(text, options, metadata) {
-  // Validate `defaultCountry`.
-  if (options && options.defaultCountry && !isSupportedCountry$1(options.defaultCountry, metadata)) {
-    options = _objectSpread$5(_objectSpread$5({}, options), {}, {
-      defaultCountry: undefined
-    });
-  }
-  // Parse phone number.
-  try {
-    return parsePhoneNumberWithError$2(text, options, metadata);
-  } catch (error) {
-    /* istanbul ignore else */
-    if (error instanceof ParseError) {
-      //
-    } else {
-      throw error;
-    }
-  }
-}
-
-function parsePhoneNumber$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  return parsePhoneNumber$2(text, options, metadata);
-}
-
-function _typeof$f(o) { "@babel/helpers - typeof"; return _typeof$f = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$f(o); }
-function ownKeys$4(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread$4(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$4(Object(t), !0).forEach(function (r) { _defineProperty$5(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$4(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty$5(e, r, t) { return (r = _toPropertyKey$f(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$f(t) { var i = _toPrimitive$f(t, "string"); return "symbol" == _typeof$f(i) ? i : i + ""; }
-function _toPrimitive$f(t, r) { if ("object" != _typeof$f(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$f(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function isValidPhoneNumber$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  options = _objectSpread$4(_objectSpread$4({}, options), {}, {
-    extract: false
-  });
-  var phoneNumber = parsePhoneNumber$2(text, options, metadata);
-  return phoneNumber && phoneNumber.isValid() || false;
-}
-
-function _typeof$e(o) { "@babel/helpers - typeof"; return _typeof$e = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$e(o); }
-function ownKeys$3(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread$3(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$3(Object(t), !0).forEach(function (r) { _defineProperty$4(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$3(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty$4(e, r, t) { return (r = _toPropertyKey$e(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$e(t) { var i = _toPrimitive$e(t, "string"); return "symbol" == _typeof$e(i) ? i : i + ""; }
-function _toPrimitive$e(t, r) { if ("object" != _typeof$e(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$e(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function isPossiblePhoneNumber$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  options = _objectSpread$3(_objectSpread$3({}, options), {}, {
-    extract: false
-  });
-  var phoneNumber = parsePhoneNumber$2(text, options, metadata);
-  return phoneNumber && phoneNumber.isPossible() || false;
-}
-
-function _typeof$d(o) { "@babel/helpers - typeof"; return _typeof$d = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$d(o); }
-function ownKeys$2(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread$2(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$2(Object(t), !0).forEach(function (r) { _defineProperty$3(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$2(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty$3(e, r, t) { return (r = _toPropertyKey$d(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$d(t) { var i = _toPrimitive$d(t, "string"); return "symbol" == _typeof$d(i) ? i : i + ""; }
-function _toPrimitive$d(t, r) { if ("object" != _typeof$d(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$d(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _typeof$6(o) { "@babel/helpers - typeof"; return _typeof$6 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$6(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), true).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey$6(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: true, configurable: true, writable: true }) : e[r] = t, e; }
+function _toPropertyKey$6(t) { var i = _toPrimitive$6(t, "string"); return "symbol" == _typeof$6(i) ? i : i + ""; }
+function _toPrimitive$6(t, r) { if ("object" != _typeof$6(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$6(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function validatePhoneNumberLength$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
+  var _normalizeArguments = normalizeArguments(arguments),
     text = _normalizeArguments.text,
     options = _normalizeArguments.options,
     metadata = _normalizeArguments.metadata;
-  options = _objectSpread$2(_objectSpread$2({}, options), {}, {
+  options = _objectSpread(_objectSpread({}, options), {}, {
     extract: false
   });
 
   // Parse phone number.
   try {
-    var phoneNumber = parsePhoneNumberWithError$2(text, options, metadata);
-    metadata = new Metadata$1(metadata);
+    var phoneNumber = parsePhoneNumberWithError(text, options, metadata);
+    metadata = new Metadata(metadata);
     metadata.selectNumberingPlan(phoneNumber.countryCallingCode);
     var result = checkNumberLength(phoneNumber.nationalNumber, phoneNumber.country, metadata);
     if (result !== 'IS_POSSIBLE') {
@@ -3278,1147 +3271,12 @@ function validatePhoneNumberLength$1() {
   }
 }
 
-function _typeof$c(o) { "@babel/helpers - typeof"; return _typeof$c = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$c(o); }
-function _defineProperties$9(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$c(o.key), o); } }
-function _createClass$9(e, r, t) { return r && _defineProperties$9(e.prototype, r), t && _defineProperties$9(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$c(t) { var i = _toPrimitive$c(t, "string"); return "symbol" == _typeof$c(i) ? i : i + ""; }
-function _toPrimitive$c(t, r) { if ("object" != _typeof$c(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$c(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _classCallCheck$9(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-// https://medium.com/dsinjs/implementing-lru-cache-in-javascript-94ba6755cda9
-var Node = /*#__PURE__*/_createClass$9(function Node(key, value) {
-  var next = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  var prev = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-  _classCallCheck$9(this, Node);
-  this.key = key;
-  this.value = value;
-  this.next = next;
-  this.prev = prev;
-});
-var LRUCache = /*#__PURE__*/function () {
-  //set default limit of 10 if limit is not passed.
-  function LRUCache() {
-    var limit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    _classCallCheck$9(this, LRUCache);
-    this.size = 0;
-    this.limit = limit;
-    this.head = null;
-    this.tail = null;
-    this.cache = {};
-  }
-
-  // Write Node to head of LinkedList
-  // update cache with Node key and Node reference
-  return _createClass$9(LRUCache, [{
-    key: "put",
-    value: function put(key, value) {
-      this.ensureLimit();
-      if (!this.head) {
-        this.head = this.tail = new Node(key, value);
-      } else {
-        var node = new Node(key, value, this.head);
-        this.head.prev = node;
-        this.head = node;
-      }
-
-      //Update the cache map
-      this.cache[key] = this.head;
-      this.size++;
-    }
-
-    // Read from cache map and make that node as new Head of LinkedList
-  }, {
-    key: "get",
-    value: function get(key) {
-      if (this.cache[key]) {
-        var value = this.cache[key].value;
-
-        // node removed from it's position and cache
-        this.remove(key);
-        // write node again to the head of LinkedList to make it most recently used
-        this.put(key, value);
-        return value;
-      }
-      console.log("Item not available in cache for key ".concat(key));
-    }
-  }, {
-    key: "ensureLimit",
-    value: function ensureLimit() {
-      if (this.size === this.limit) {
-        this.remove(this.tail.key);
-      }
-    }
-  }, {
-    key: "remove",
-    value: function remove(key) {
-      var node = this.cache[key];
-      if (node.prev !== null) {
-        node.prev.next = node.next;
-      } else {
-        this.head = node.next;
-      }
-      if (node.next !== null) {
-        node.next.prev = node.prev;
-      } else {
-        this.tail = node.prev;
-      }
-      delete this.cache[key];
-      this.size--;
-    }
-  }, {
-    key: "clear",
-    value: function clear() {
-      this.head = null;
-      this.tail = null;
-      this.size = 0;
-      this.cache = {};
-    }
-
-    // // Invokes the callback function with every node of the chain and the index of the node.
-    // forEach(fn) {
-    //   let node = this.head;
-    //   let counter = 0;
-    //   while (node) {
-    //     fn(node, counter);
-    //     node = node.next;
-    //     counter++;
-    //   }
-    // }
-
-    // // To iterate over LRU with a 'for...of' loop
-    // *[Symbol.iterator]() {
-    //   let node = this.head;
-    //   while (node) {
-    //     yield node;
-    //     node = node.next;
-    //   }
-    // }
-  }]);
-}();
-
-function _typeof$b(o) { "@babel/helpers - typeof"; return _typeof$b = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$b(o); }
-function _classCallCheck$8(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$8(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$b(o.key), o); } }
-function _createClass$8(e, r, t) { return r && _defineProperties$8(e.prototype, r), t && _defineProperties$8(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$b(t) { var i = _toPrimitive$b(t, "string"); return "symbol" == _typeof$b(i) ? i : i + ""; }
-function _toPrimitive$b(t, r) { if ("object" != _typeof$b(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$b(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-
-// A cache for frequently used country-specific regular expressions. Set to 32 to cover ~2-3
-// countries being used for the same doc with ~10 patterns for each country. Some pages will have
-// a lot more countries in use, but typically fewer numbers for each so expanding the cache for
-// that use-case won't have a lot of benefit.
-var RegExpCache = /*#__PURE__*/function () {
-  function RegExpCache(size) {
-    _classCallCheck$8(this, RegExpCache);
-    this.cache = new LRUCache(size);
-  }
-  return _createClass$8(RegExpCache, [{
-    key: "getPatternForRegExp",
-    value: function getPatternForRegExp(pattern) {
-      var regExp = this.cache.get(pattern);
-      if (!regExp) {
-        regExp = new RegExp('^' + pattern);
-        this.cache.put(pattern, regExp);
-      }
-      return regExp;
-    }
-  }]);
-}();
-
-/** Returns a regular expression quantifier with an upper and lower limit. */
-function limit(lower, upper) {
-  if (lower < 0 || upper <= 0 || upper < lower) {
-    throw new TypeError();
-  }
-  return "{".concat(lower, ",").concat(upper, "}");
-}
-
-/**
- * Trims away any characters after the first match of {@code pattern} in {@code candidate},
- * returning the trimmed version.
- */
-function trimAfterFirstMatch(regexp, string) {
-  var index = string.search(regexp);
-  if (index >= 0) {
-    return string.slice(0, index);
-  }
-  return string;
-}
-function startsWith(string, substring) {
-  return string.indexOf(substring) === 0;
-}
-function endsWith(string, substring) {
-  return string.indexOf(substring, string.length - substring.length) === string.length - substring.length;
-}
-
-// Javascript doesn't support UTF-8 regular expressions.
-// So mimicking them here.
-
-// Copy-pasted from `PhoneNumberMatcher.js`.
-
-/**
- * "\p{Z}" is any kind of whitespace or invisible separator ("Separator").
- * http://www.regular-expressions.info/unicode.html
- * "\P{Z}" is the reverse of "\p{Z}".
- * "\p{N}" is any kind of numeric character in any script ("Number").
- * "\p{Nd}" is a digit zero through nine in any script except "ideographic scripts" ("Decimal_Digit_Number").
- * "\p{Sc}" is a currency symbol ("Currency_Symbol").
- * "\p{L}" is any kind of letter from any language ("Letter").
- * "\p{Mn}" is "non-spacing mark".
- *
- * Javascript doesn't support Unicode Regular Expressions
- * so substituting it with this explicit set of characters.
- *
- * https://stackoverflow.com/questions/13210194/javascript-regex-equivalent-of-a-za-z-using-pl
- * https://github.com/danielberndt/babel-plugin-utf-8-regex/blob/master/src/transformer.js
- */
-
-var _pZ = " \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000";
-var pZ = "[".concat(_pZ, "]");
-var PZ = "[^".concat(_pZ, "]");
-var _pN = "0-9\xB2\xB3\xB9\xBC-\xBE\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u09F4-\u09F9\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0B72-\u0B77\u0BE6-\u0BF2\u0C66-\u0C6F\u0C78-\u0C7E\u0CE6-\u0CEF\u0D66-\u0D75\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F33\u1040-\u1049\u1090-\u1099\u1369-\u137C\u16EE-\u16F0\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1946-\u194F\u19D0-\u19DA\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\u2070\u2074-\u2079\u2080-\u2089\u2150-\u2182\u2185-\u2189\u2460-\u249B\u24EA-\u24FF\u2776-\u2793\u2CFD\u3007\u3021-\u3029\u3038-\u303A\u3192-\u3195\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\uA620-\uA629\uA6E6-\uA6EF\uA830-\uA835\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19";
-// const pN = `[${_pN}]`
-
-var _pNd = "0-9\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0BE6-\u0BEF\u0C66-\u0C6F\u0CE6-\u0CEF\u0D66-\u0D6F\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F29\u1040-\u1049\u1090-\u1099\u17E0-\u17E9\u1810-\u1819\u1946-\u194F\u19D0-\u19D9\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\uA620-\uA629\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19";
-var pNd = "[".concat(_pNd, "]");
-var _pL = "A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC";
-var pL = "[".concat(_pL, "]");
-var pL_regexp = new RegExp(pL);
-var _pSc = "$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20B9\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6";
-var pSc = "[".concat(_pSc, "]");
-var pSc_regexp = new RegExp(pSc);
-var _pMn = "\u0300-\u036F\u0483-\u0487\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED\u0711\u0730-\u074A\u07A6-\u07B0\u07EB-\u07F3\u0816-\u0819\u081B-\u0823\u0825-\u0827\u0829-\u082D\u0859-\u085B\u08E4-\u08FE\u0900-\u0902\u093A\u093C\u0941-\u0948\u094D\u0951-\u0957\u0962\u0963\u0981\u09BC\u09C1-\u09C4\u09CD\u09E2\u09E3\u0A01\u0A02\u0A3C\u0A41\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A70\u0A71\u0A75\u0A81\u0A82\u0ABC\u0AC1-\u0AC5\u0AC7\u0AC8\u0ACD\u0AE2\u0AE3\u0B01\u0B3C\u0B3F\u0B41-\u0B44\u0B4D\u0B56\u0B62\u0B63\u0B82\u0BC0\u0BCD\u0C3E-\u0C40\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C62\u0C63\u0CBC\u0CBF\u0CC6\u0CCC\u0CCD\u0CE2\u0CE3\u0D41-\u0D44\u0D4D\u0D62\u0D63\u0DCA\u0DD2-\u0DD4\u0DD6\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0EB1\u0EB4-\u0EB9\u0EBB\u0EBC\u0EC8-\u0ECD\u0F18\u0F19\u0F35\u0F37\u0F39\u0F71-\u0F7E\u0F80-\u0F84\u0F86\u0F87\u0F8D-\u0F97\u0F99-\u0FBC\u0FC6\u102D-\u1030\u1032-\u1037\u1039\u103A\u103D\u103E\u1058\u1059\u105E-\u1060\u1071-\u1074\u1082\u1085\u1086\u108D\u109D\u135D-\u135F\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17B4\u17B5\u17B7-\u17BD\u17C6\u17C9-\u17D3\u17DD\u180B-\u180D\u18A9\u1920-\u1922\u1927\u1928\u1932\u1939-\u193B\u1A17\u1A18\u1A56\u1A58-\u1A5E\u1A60\u1A62\u1A65-\u1A6C\u1A73-\u1A7C\u1A7F\u1B00-\u1B03\u1B34\u1B36-\u1B3A\u1B3C\u1B42\u1B6B-\u1B73\u1B80\u1B81\u1BA2-\u1BA5\u1BA8\u1BA9\u1BAB\u1BE6\u1BE8\u1BE9\u1BED\u1BEF-\u1BF1\u1C2C-\u1C33\u1C36\u1C37\u1CD0-\u1CD2\u1CD4-\u1CE0\u1CE2-\u1CE8\u1CED\u1CF4\u1DC0-\u1DE6\u1DFC-\u1DFF\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2CEF-\u2CF1\u2D7F\u2DE0-\u2DFF\u302A-\u302D\u3099\u309A\uA66F\uA674-\uA67D\uA69F\uA6F0\uA6F1\uA802\uA806\uA80B\uA825\uA826\uA8C4\uA8E0-\uA8F1\uA926-\uA92D\uA947-\uA951\uA980-\uA982\uA9B3\uA9B6-\uA9B9\uA9BC\uAA29-\uAA2E\uAA31\uAA32\uAA35\uAA36\uAA43\uAA4C\uAAB0\uAAB2-\uAAB4\uAAB7\uAAB8\uAABE\uAABF\uAAC1\uAAEC\uAAED\uAAF6\uABE5\uABE8\uABED\uFB1E\uFE00-\uFE0F\uFE20-\uFE26";
-var pMn = "[".concat(_pMn, "]");
-var pMn_regexp = new RegExp(pMn);
-var _InBasic_Latin = "\0-\x7F";
-var _InLatin_1_Supplement = "\x80-\xFF";
-var _InLatin_Extended_A = "\u0100-\u017F";
-var _InLatin_Extended_Additional = "\u1E00-\u1EFF";
-var _InLatin_Extended_B = "\u0180-\u024F";
-var _InCombining_Diacritical_Marks = "\u0300-\u036F";
-var latinLetterRegexp = new RegExp('[' + _InBasic_Latin + _InLatin_1_Supplement + _InLatin_Extended_A + _InLatin_Extended_Additional + _InLatin_Extended_B + _InCombining_Diacritical_Marks + ']');
-
-/**
- * Helper method to determine if a character is a Latin-script letter or not.
- * For our purposes, combining marks should also return true since we assume
- * they have been added to a preceding Latin character.
- */
-function isLatinLetter(letter) {
-  // Combining marks are a subset of non-spacing-mark.
-  if (!pL_regexp.test(letter) && !pMn_regexp.test(letter)) {
-    return false;
-  }
-  return latinLetterRegexp.test(letter);
-}
-function isInvalidPunctuationSymbol(character) {
-  return character === '%' || pSc_regexp.test(character);
-}
-
-/**
- * Matches a phone number object against a phone number string.
- * @param  {string} phoneNumberString
- * @param  {PhoneNumber} phoneNumber
- * @param  {object} metadata — Metadata JSON
- * @return {'INVALID_NUMBER'|'NO_MATCH'|'SHORT_NSN_MATCH'|'NSN_MATCH'|'EXACT_MATCH'}
- */
-function matchPhoneNumberStringAgainstPhoneNumber(phoneNumberString, phoneNumber, metadata) {
-  // Parse `phoneNumberString`.
-  var phoneNumberStringContainsCallingCode = true;
-  var parsedPhoneNumber = parsePhoneNumber$1(phoneNumberString, metadata);
-  if (!parsedPhoneNumber) {
-    // If `phoneNumberString` didn't contain a country calling code
-    // then substitute it with the `phoneNumber`'s country calling code.
-    phoneNumberStringContainsCallingCode = false;
-    parsedPhoneNumber = parsePhoneNumber$1(phoneNumberString, {
-      defaultCallingCode: phoneNumber.countryCallingCode
-    }, metadata);
-  }
-  if (!parsedPhoneNumber) {
-    return 'INVALID_NUMBER';
-  }
-
-  // Check that the extensions match.
-  if (phoneNumber.ext) {
-    if (parsedPhoneNumber.ext !== phoneNumber.ext) {
-      return 'NO_MATCH';
-    }
-  } else {
-    if (parsedPhoneNumber.ext) {
-      return 'NO_MATCH';
-    }
-  }
-
-  // Check that country calling codes match.
-  if (phoneNumberStringContainsCallingCode) {
-    if (phoneNumber.countryCallingCode !== parsedPhoneNumber.countryCallingCode) {
-      return 'NO_MATCH';
-    }
-  }
-
-  // Check if the whole numbers match.
-  if (phoneNumber.number === parsedPhoneNumber.number) {
-    if (phoneNumberStringContainsCallingCode) {
-      return 'EXACT_MATCH';
-    } else {
-      return 'NSN_MATCH';
-    }
-  }
-
-  // Check if one national number is a "suffix" of the other.
-  if (phoneNumber.nationalNumber.indexOf(parsedPhoneNumber.nationalNumber) === 0 || parsedPhoneNumber.nationalNumber.indexOf(phoneNumber.nationalNumber) === 0) {
-    // "A SHORT_NSN_MATCH occurs if there is a difference because of the
-    //  presence or absence of an 'Italian leading zero', the presence or
-    //  absence of an extension, or one NSN being a shorter variant of the
-    //  other."
-    return 'SHORT_NSN_MATCH';
-  }
-  return 'NO_MATCH';
-}
-
-function _createForOfIteratorHelperLoose$4(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$6(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$6(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$6(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$6(r, a) : void 0; } }
-function _arrayLikeToArray$6(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-
-/**
- * Leniency when finding potential phone numbers in text segments
- * The levels here are ordered in increasing strictness.
- */
-var Leniency = {
-  /**
-   * Phone numbers accepted are "possible", but not necessarily "valid".
-   */
-  POSSIBLE: function POSSIBLE(phoneNumber, _ref) {
-    var candidate = _ref.candidate,
-      metadata = _ref.metadata;
-    return true;
-  },
-  /**
-   * Phone numbers accepted are "possible" and "valid".
-   * Numbers written in national format must have their national-prefix
-   * present if it is usually written for a number of this type.
-   */
-  VALID: function VALID(phoneNumber, _ref2) {
-    var candidate = _ref2.candidate,
-      defaultCountry = _ref2.defaultCountry,
-      metadata = _ref2.metadata;
-    if (!phoneNumber.isValid() || !containsOnlyValidXChars(phoneNumber, candidate, metadata)) {
-      return false;
-    }
-
-    // Skipped for simplicity.
-    // return isNationalPrefixPresentIfRequired(phoneNumber, { defaultCountry, metadata })
-    return true;
-  },
-  /**
-   * Phone numbers accepted are "valid" and
-   * are grouped in a possible way for this locale. For example, a US number written as
-   * "65 02 53 00 00" and "650253 0000" are not accepted at this leniency level, whereas
-   * "650 253 0000", "650 2530000" or "6502530000" are.
-   * Numbers with more than one '/' symbol in the national significant number
-   * are also dropped at this level.
-   *
-   * Warning: This level might result in lower coverage especially for regions outside of
-   * country code "+1". If you are not sure about which level to use,
-   * email the discussion group libphonenumber-discuss@googlegroups.com.
-   */
-  STRICT_GROUPING: function STRICT_GROUPING(phoneNumber, _ref3) {
-    var candidate = _ref3.candidate,
-      defaultCountry = _ref3.defaultCountry,
-      metadata = _ref3.metadata,
-      regExpCache = _ref3.regExpCache;
-    if (!phoneNumber.isValid() || !containsOnlyValidXChars(phoneNumber, candidate, metadata) || containsMoreThanOneSlashInNationalNumber(phoneNumber, candidate) || !isNationalPrefixPresentIfRequired(phoneNumber, {
-      defaultCountry: defaultCountry,
-      metadata: metadata
-    })) {
-      return false;
-    }
-    return checkNumberGroupingIsValid(phoneNumber, candidate, metadata, allNumberGroupsRemainGrouped, regExpCache);
-  },
-  /**
-   * Phone numbers accepted are "valid" and are grouped in the same way
-   * that we would have formatted it, or as a single block.
-   * For example, a US number written as "650 2530000" is not accepted
-   * at this leniency level, whereas "650 253 0000" or "6502530000" are.
-   * Numbers with more than one '/' symbol are also dropped at this level.
-   *
-   * Warning: This level might result in lower coverage especially for regions outside of
-   * country code "+1". If you are not sure about which level to use, email the discussion group
-   * libphonenumber-discuss@googlegroups.com.
-   */
-  EXACT_GROUPING: function EXACT_GROUPING(phoneNumber, _ref4) {
-    var candidate = _ref4.candidate,
-      defaultCountry = _ref4.defaultCountry,
-      metadata = _ref4.metadata,
-      regExpCache = _ref4.regExpCache;
-    if (!phoneNumber.isValid() || !containsOnlyValidXChars(phoneNumber, candidate, metadata) || containsMoreThanOneSlashInNationalNumber(phoneNumber, candidate) || !isNationalPrefixPresentIfRequired(phoneNumber, {
-      defaultCountry: defaultCountry,
-      metadata: metadata
-    })) {
-      return false;
-    }
-    return checkNumberGroupingIsValid(phoneNumber, candidate, metadata, allNumberGroupsAreExactlyPresent, regExpCache);
-  }
-};
-function containsOnlyValidXChars(phoneNumber, candidate, metadata) {
-  // The characters 'x' and 'X' can be (1) a carrier code, in which case they always precede the
-  // national significant number or (2) an extension sign, in which case they always precede the
-  // extension number. We assume a carrier code is more than 1 digit, so the first case has to
-  // have more than 1 consecutive 'x' or 'X', whereas the second case can only have exactly 1 'x'
-  // or 'X'. We ignore the character if it appears as the last character of the string.
-  for (var index = 0; index < candidate.length - 1; index++) {
-    var charAtIndex = candidate.charAt(index);
-    if (charAtIndex === 'x' || charAtIndex === 'X') {
-      var charAtNextIndex = candidate.charAt(index + 1);
-      if (charAtNextIndex === 'x' || charAtNextIndex === 'X') {
-        // This is the carrier code case, in which the 'X's always precede the national
-        // significant number.
-        index++;
-        if (matchPhoneNumberStringAgainstPhoneNumber(candidate.substring(index), phoneNumber, metadata) !== 'NSN_MATCH') {
-          return false;
-        }
-        // This is the extension sign case, in which the 'x' or 'X' should always precede the
-        // extension number.
-      } else {
-        var ext = parseDigits(candidate.substring(index));
-        if (ext) {
-          if (phoneNumber.ext !== ext) {
-            return false;
-          }
-        } else {
-          if (phoneNumber.ext) {
-            return false;
-          }
-        }
-      }
-    }
-  }
-  return true;
-}
-function isNationalPrefixPresentIfRequired(phoneNumber, _ref5) {
-  var defaultCountry = _ref5.defaultCountry,
-    _metadata = _ref5.metadata;
-  // First, check how we deduced the country code. If it was written in international format, then
-  // the national prefix is not required.
-  if (phoneNumber.__countryCallingCodeSource !== 'FROM_DEFAULT_COUNTRY') {
-    return true;
-  }
-  var metadata = new Metadata$1(_metadata);
-  metadata.selectNumberingPlan(phoneNumber.countryCallingCode);
-  var phoneNumberRegion = phoneNumber.country || getCountryByCallingCode(phoneNumber.countryCallingCode, {
-    nationalNumber: phoneNumber.nationalNumber,
-    metadata: metadata
-  });
-
-  // Check if a national prefix should be present when formatting this number.
-  var nationalNumber = phoneNumber.nationalNumber;
-  var format = chooseFormatForNumber(metadata.numberingPlan.formats(), nationalNumber);
-
-  // To do this, we check that a national prefix formatting rule was present
-  // and that it wasn't just the first-group symbol ($1) with punctuation.
-  if (format.nationalPrefixFormattingRule()) {
-    if (metadata.numberingPlan.nationalPrefixIsOptionalWhenFormattingInNationalFormat()) {
-      // The national-prefix is optional in these cases, so we don't need to check if it was present.
-      return true;
-    }
-    if (!format.usesNationalPrefix()) {
-      // National Prefix not needed for this number.
-      return true;
-    }
-    return Boolean(phoneNumber.nationalPrefix);
-  }
-  return true;
-}
-function containsMoreThanOneSlashInNationalNumber(phoneNumber, candidate) {
-  var firstSlashInBodyIndex = candidate.indexOf('/');
-  if (firstSlashInBodyIndex < 0) {
-    // No slashes, this is okay.
-    return false;
-  }
-
-  // Now look for a second one.
-  var secondSlashInBodyIndex = candidate.indexOf('/', firstSlashInBodyIndex + 1);
-  if (secondSlashInBodyIndex < 0) {
-    // Only one slash, this is okay.
-    return false;
-  }
-
-  // If the first slash is after the country calling code, this is permitted.
-  var candidateHasCountryCode = phoneNumber.__countryCallingCodeSource === 'FROM_NUMBER_WITH_PLUS_SIGN' || phoneNumber.__countryCallingCodeSource === 'FROM_NUMBER_WITHOUT_PLUS_SIGN';
-  if (candidateHasCountryCode && parseDigits(candidate.substring(0, firstSlashInBodyIndex)) === phoneNumber.countryCallingCode) {
-    // Any more slashes and this is illegal.
-    return candidate.slice(secondSlashInBodyIndex + 1).indexOf('/') >= 0;
-  }
-  return true;
-}
-function checkNumberGroupingIsValid(number, candidate, metadata, checkGroups, regExpCache) {
-  throw new Error('This part of code hasn\'t been ported');
-  var normalizedCandidate = normalizeDigits(candidate, true /* keep non-digits */);
-  var formattedNumberGroups = getNationalNumberGroups(metadata, number, null);
-  if (checkGroups(metadata, number, normalizedCandidate, formattedNumberGroups)) {
-    return true;
-  }
-
-  // If this didn't pass, see if there are any alternate formats that match, and try them instead.
-  var alternateFormats = MetadataManager.getAlternateFormatsForCountry(number.getCountryCode());
-  var nationalSignificantNumber = util.getNationalSignificantNumber(number);
-  if (alternateFormats) {
-    for (var _iterator = _createForOfIteratorHelperLoose$4(alternateFormats.numberFormats()), _step; !(_step = _iterator()).done;) {
-      var alternateFormat = _step.value;
-      if (alternateFormat.leadingDigitsPatterns().length > 0) {
-        // There is only one leading digits pattern for alternate formats.
-        var leadingDigitsRegExp = regExpCache.getPatternForRegExp('^' + alternateFormat.leadingDigitsPatterns()[0]);
-        if (!leadingDigitsRegExp.test(nationalSignificantNumber)) {
-          // Leading digits don't match; try another one.
-          continue;
-        }
-      }
-      formattedNumberGroups = getNationalNumberGroups(metadata, number, alternateFormat);
-      if (checkGroups(metadata, number, normalizedCandidate, formattedNumberGroups)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-/**
- * Helper method to get the national-number part of a number, formatted without any national
- * prefix, and return it as a set of digit blocks that would be formatted together following
- * standard formatting rules.
- */
-function getNationalNumberGroups(metadata, number, formattingPattern) {
-  throw new Error('This part of code hasn\'t been ported');
-  if (formattingPattern) {
-    // We format the NSN only, and split that according to the separator.
-    var nationalSignificantNumber = util.getNationalSignificantNumber(number);
-    return util.formatNsnUsingPattern(nationalSignificantNumber, formattingPattern, 'RFC3966', metadata).split('-');
-  }
-
-  // This will be in the format +CC-DG1-DG2-DGX;ext=EXT where DG1..DGX represents groups of digits.
-  var rfc3966Format = formatNumber(number, 'RFC3966', metadata);
-
-  // We remove the extension part from the formatted string before splitting it into different
-  // groups.
-  var endIndex = rfc3966Format.indexOf(';');
-  if (endIndex < 0) {
-    endIndex = rfc3966Format.length;
-  }
-
-  // The country-code will have a '-' following it.
-  var startIndex = rfc3966Format.indexOf('-') + 1;
-  return rfc3966Format.slice(startIndex, endIndex).split('-');
-}
-function allNumberGroupsAreExactlyPresent(metadata, number, normalizedCandidate, formattedNumberGroups) {
-  throw new Error('This part of code hasn\'t been ported');
-  var candidateGroups = normalizedCandidate.split(NON_DIGITS_PATTERN);
-
-  // Set this to the last group, skipping it if the number has an extension.
-  var candidateNumberGroupIndex = number.hasExtension() ? candidateGroups.length - 2 : candidateGroups.length - 1;
-
-  // First we check if the national significant number is formatted as a block.
-  // We use contains and not equals, since the national significant number may be present with
-  // a prefix such as a national number prefix, or the country code itself.
-  if (candidateGroups.length == 1 || candidateGroups[candidateNumberGroupIndex].contains(util.getNationalSignificantNumber(number))) {
-    return true;
-  }
-
-  // Starting from the end, go through in reverse, excluding the first group, and check the
-  // candidate and number groups are the same.
-  var formattedNumberGroupIndex = formattedNumberGroups.length - 1;
-  while (formattedNumberGroupIndex > 0 && candidateNumberGroupIndex >= 0) {
-    if (candidateGroups[candidateNumberGroupIndex] !== formattedNumberGroups[formattedNumberGroupIndex]) {
-      return false;
-    }
-    formattedNumberGroupIndex--;
-    candidateNumberGroupIndex--;
-  }
-
-  // Now check the first group. There may be a national prefix at the start, so we only check
-  // that the candidate group ends with the formatted number group.
-  return candidateNumberGroupIndex >= 0 && endsWith(candidateGroups[candidateNumberGroupIndex], formattedNumberGroups[0]);
-}
-function allNumberGroupsRemainGrouped(metadata, number, normalizedCandidate, formattedNumberGroups) {
-  throw new Error('This part of code hasn\'t been ported');
-  var fromIndex = 0;
-  if (number.getCountryCodeSource() !== CountryCodeSource.FROM_DEFAULT_COUNTRY) {
-    // First skip the country code if the normalized candidate contained it.
-    var countryCode = String(number.getCountryCode());
-    fromIndex = normalizedCandidate.indexOf(countryCode) + countryCode.length();
-  }
-
-  // Check each group of consecutive digits are not broken into separate groupings in the
-  // {@code normalizedCandidate} string.
-  for (var i = 0; i < formattedNumberGroups.length; i++) {
-    // Fails if the substring of {@code normalizedCandidate} starting from {@code fromIndex}
-    // doesn't contain the consecutive digits in formattedNumberGroups[i].
-    fromIndex = normalizedCandidate.indexOf(formattedNumberGroups[i], fromIndex);
-    if (fromIndex < 0) {
-      return false;
-    }
-    // Moves {@code fromIndex} forward.
-    fromIndex += formattedNumberGroups[i].length();
-    if (i == 0 && fromIndex < normalizedCandidate.length()) {
-      // We are at the position right after the NDC. We get the region used for formatting
-      // information based on the country code in the phone number, rather than the number itself,
-      // as we do not need to distinguish between different countries with the same country
-      // calling code and this is faster.
-      var region = util.getRegionCodeForCountryCode(number.getCountryCode());
-      if (util.getNddPrefixForRegion(region, true) != null && Character.isDigit(normalizedCandidate.charAt(fromIndex))) {
-        // This means there is no formatting symbol after the NDC. In this case, we only
-        // accept the number if there is no formatting symbol at all in the number, except
-        // for extensions. This is only important for countries with national prefixes.
-        var nationalSignificantNumber = util.getNationalSignificantNumber(number);
-        return startsWith(normalizedCandidate.slice(fromIndex - formattedNumberGroups[i].length), nationalSignificantNumber);
-      }
-    }
-  }
-
-  // The check here makes sure that we haven't mistakenly already used the extension to
-  // match the last group of the subscriber number. Note the extension cannot have
-  // formatting in-between digits.
-  return normalizedCandidate.slice(fromIndex).contains(number.getExtension());
-}
-
-// Regular expression of characters typically used to start a second phone number for the purposes
-// of parsing. This allows us to strip off parts of the number that are actually the start of
-// another number, such as for: (530) 583-6985 x302/x2303 -> the second extension here makes this
-// actually two phone numbers, (530) 583-6985 x302 and (530) 583-6985 x2303. We remove the second
-// extension so that the first number is parsed correctly.
-//
-// Matches a slash (\ or /) followed by a space followed by an `x`.
-//
-var SECOND_NUMBER_START_PATTERN = /[\\/] *x/;
-function parsePreCandidate(candidate) {
-  // Check for extra numbers at the end.
-  // TODO: This is the place to start when trying to support extraction of multiple phone number
-  // from split notations (+41 79 123 45 67 / 68).
-  return trimAfterFirstMatch(SECOND_NUMBER_START_PATTERN, candidate);
-}
-
-// Matches strings that look like dates using "/" as a separator.
-// Examples: 3/10/2011, 31/10/96 or 08/31/95.
-var SLASH_SEPARATED_DATES = /(?:(?:[0-3]?\d\/[01]?\d)|(?:[01]?\d\/[0-3]?\d))\/(?:[12]\d)?\d{2}/;
-
-// Matches timestamps.
-// Examples: "2012-01-02 08:00".
-// Note that the reg-ex does not include the
-// trailing ":\d\d" -- that is covered by TIME_STAMPS_SUFFIX.
-var TIME_STAMPS = /[12]\d{3}[-/]?[01]\d[-/]?[0-3]\d +[0-2]\d$/;
-var TIME_STAMPS_SUFFIX_LEADING = /^:[0-5]\d/;
-function isValidPreCandidate(candidate, offset, text) {
-  // Skip a match that is more likely to be a date.
-  if (SLASH_SEPARATED_DATES.test(candidate)) {
-    return false;
-  }
-
-  // Skip potential time-stamps.
-  if (TIME_STAMPS.test(candidate)) {
-    var followingText = text.slice(offset + candidate.length);
-    if (TIME_STAMPS_SUFFIX_LEADING.test(followingText)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Copy-pasted from `PhoneNumberMatcher.js`.
-
-var OPENING_PARENS = "(\\[\uFF08\uFF3B";
-var CLOSING_PARENS = ")\\]\uFF09\uFF3D";
-var NON_PARENS = "[^".concat(OPENING_PARENS).concat(CLOSING_PARENS, "]");
-var LEAD_CLASS = "[".concat(OPENING_PARENS).concat(PLUS_CHARS, "]");
-
-// Punctuation that may be at the start of a phone number - brackets and plus signs.
-var LEAD_CLASS_LEADING = new RegExp('^' + LEAD_CLASS);
-
-// Limit on the number of pairs of brackets in a phone number.
-var BRACKET_PAIR_LIMIT = limit(0, 3);
-
-/**
- * Pattern to check that brackets match. Opening brackets should be closed within a phone number.
- * This also checks that there is something inside the brackets. Having no brackets at all is also
- * fine.
- *
- * An opening bracket at the beginning may not be closed, but subsequent ones should be.  It's
- * also possible that the leading bracket was dropped, so we shouldn't be surprised if we see a
- * closing bracket first. We limit the sets of brackets in a phone number to four.
- */
-var MATCHING_BRACKETS_ENTIRE = new RegExp('^' + "(?:[" + OPENING_PARENS + "])?" + "(?:" + NON_PARENS + "+" + "[" + CLOSING_PARENS + "])?" + NON_PARENS + "+" + "(?:[" + OPENING_PARENS + "]" + NON_PARENS + "+[" + CLOSING_PARENS + "])" + BRACKET_PAIR_LIMIT + NON_PARENS + "*" + '$');
-
-/**
- * Matches strings that look like publication pages. Example:
- * <pre>Computing Complete Answers to Queries in the Presence of Limited Access Patterns.
- * Chen Li. VLDB J. 12(3): 211-227 (2003).</pre>
- *
- * The string "211-227 (2003)" is not a telephone number.
- */
-var PUB_PAGES = /\d{1,5}-+\d{1,5}\s{0,4}\(\d{1,4}/;
-function isValidCandidate(candidate, offset, text, leniency) {
-  // Check the candidate doesn't contain any formatting
-  // which would indicate that it really isn't a phone number.
-  if (!MATCHING_BRACKETS_ENTIRE.test(candidate) || PUB_PAGES.test(candidate)) {
-    return;
-  }
-
-  // If leniency is set to VALID or stricter, we also want to skip numbers that are surrounded
-  // by Latin alphabetic characters, to skip cases like abc8005001234 or 8005001234def.
-  if (leniency !== 'POSSIBLE') {
-    // If the candidate is not at the start of the text,
-    // and does not start with phone-number punctuation,
-    // check the previous character.
-    if (offset > 0 && !LEAD_CLASS_LEADING.test(candidate)) {
-      var previousChar = text[offset - 1];
-      // We return null if it is a latin letter or an invalid punctuation symbol.
-      if (isInvalidPunctuationSymbol(previousChar) || isLatinLetter(previousChar)) {
-        return false;
-      }
-    }
-    var lastCharIndex = offset + candidate.length;
-    if (lastCharIndex < text.length) {
-      var nextChar = text[lastCharIndex];
-      if (isInvalidPunctuationSymbol(nextChar) || isLatinLetter(nextChar)) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-function _typeof$a(o) { "@babel/helpers - typeof"; return _typeof$a = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$a(o); }
-function _createForOfIteratorHelperLoose$3(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$5(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray$5(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$5(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$5(r, a) : void 0; } }
-function _arrayLikeToArray$5(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _classCallCheck$7(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$7(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$a(o.key), o); } }
-function _createClass$7(e, r, t) { return r && _defineProperties$7(e.prototype, r), t && _defineProperties$7(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$a(t) { var i = _toPrimitive$a(t, "string"); return "symbol" == _typeof$a(i) ? i : i + ""; }
-function _toPrimitive$a(t, r) { if ("object" != _typeof$a(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$a(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var USE_NON_GEOGRAPHIC_COUNTRY_CODE$1 = false;
-var EXTN_PATTERNS_FOR_MATCHING = createExtensionPattern('matching');
-
-/**
- * Patterns used to extract phone numbers from a larger phone-number-like pattern. These are
- * ordered according to specificity. For example, white-space is last since that is frequently
- * used in numbers, not just to separate two numbers. We have separate patterns since we don't
- * want to break up the phone-number-like text on more than one different kind of symbol at one
- * time, although symbols of the same type (e.g. space) can be safely grouped together.
- *
- * Note that if there is a match, we will always check any text found up to the first match as
- * well.
- */
-var INNER_MATCHES = [
-// Breaks on the slash - e.g. "651-234-2345/332-445-1234"
-'/+(.*)',
-// Note that the bracket here is inside the capturing group, since we consider it part of the
-// phone number. Will match a pattern like "(650) 223 3345 (754) 223 3321".
-'(\\([^(]*)', // Breaks on a hyphen - e.g. "12345 - 332-445-1234 is my number."
-// We require a space on either side of the hyphen for it to be considered a separator.
-"(?:".concat(pZ, "-|-").concat(pZ, ")").concat(pZ, "*(.+)"), // Various types of wide hyphens. Note we have decided not to enforce a space here, since it's
-// possible that it's supposed to be used to break two numbers without spaces, and we haven't
-// seen many instances of it used within a number.
-"[\u2012-\u2015\uFF0D]".concat(pZ, "*(.+)"), // Breaks on a full stop - e.g. "12345. 332-445-1234 is my number."
-"\\.+".concat(pZ, "*([^.]+)"), // Breaks on space - e.g. "3324451234 8002341234"
-"".concat(pZ, "+(").concat(PZ, "+)")];
-
-// Limit on the number of leading (plus) characters.
-var leadLimit = limit(0, 2);
-
-// Limit on the number of consecutive punctuation characters.
-var punctuationLimit = limit(0, 4);
-
-/* The maximum number of digits allowed in a digit-separated block. As we allow all digits in a
- * single block, set high enough to accommodate the entire national number and the international
- * country code. */
-var digitBlockLimit = MAX_LENGTH_FOR_NSN + MAX_LENGTH_COUNTRY_CODE;
-
-// Limit on the number of blocks separated by punctuation.
-// Uses digitBlockLimit since some formats use spaces to separate each digit.
-var blockLimit = limit(0, digitBlockLimit);
-
-/* A punctuation sequence allowing white space. */
-var punctuation = "[".concat(VALID_PUNCTUATION, "]") + punctuationLimit;
-
-// A digits block without punctuation.
-var digitSequence = pNd + limit(1, digitBlockLimit);
-
-/**
- * Phone number pattern allowing optional punctuation.
- * The phone number pattern used by `find()`, similar to
- * VALID_PHONE_NUMBER, but with the following differences:
- * <ul>
- *   <li>All captures are limited in order to place an upper bound to the text matched by the
- *       pattern.
- * <ul>
- *   <li>Leading punctuation / plus signs are limited.
- *   <li>Consecutive occurrences of punctuation are limited.
- *   <li>Number of digits is limited.
- * </ul>
- *   <li>No whitespace is allowed at the start or end.
- *   <li>No alpha digits (vanity numbers such as 1-800-SIX-FLAGS) are currently supported.
- * </ul>
- */
-var PATTERN = '(?:' + LEAD_CLASS + punctuation + ')' + leadLimit + digitSequence + '(?:' + punctuation + digitSequence + ')' + blockLimit + '(?:' + EXTN_PATTERNS_FOR_MATCHING + ')?';
-
-// Regular expression of trailing characters that we want to remove.
-// We remove all characters that are not alpha or numerical characters.
-// The hash character is retained here, as it may signify
-// the previous block was an extension.
-//
-// // Don't know what does '&&' mean here.
-// const UNWANTED_END_CHAR_PATTERN = new RegExp(`[[\\P{N}&&\\P{L}]&&[^#]]+$`)
-//
-var UNWANTED_END_CHAR_PATTERN = new RegExp("[^".concat(_pN).concat(_pL, "#]+$"));
-
-// const NON_DIGITS_PATTERN = /(\D+)/
-
-var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || Math.pow(2, 53) - 1;
-
-/**
- * A stateful class that finds and extracts telephone numbers from {@linkplain CharSequence text}.
- * Instances can be created using the {@linkplain PhoneNumberUtil#findNumbers factory methods} in
- * {@link PhoneNumberUtil}.
- *
- * <p>Vanity numbers (phone numbers using alphabetic digits such as <tt>1-800-SIX-FLAGS</tt> are
- * not found.
- *
- * <p>This class is not thread-safe.
- */
-var PhoneNumberMatcher$1 = /*#__PURE__*/function () {
-  /**
-   * @param {string} text — the character sequence that we will search, null for no text.
-   * @param {'POSSIBLE'|'VALID'|'STRICT_GROUPING'|'EXACT_GROUPING'} [options.leniency] — The leniency to use when evaluating candidate phone numbers. See `source/findNumbers/Leniency.js` for more details.
-   * @param {number} [options.maxTries] — The maximum number of invalid numbers to try before giving up on the text. This is to cover degenerate cases where the text has a lot of false positives in it. Must be >= 0.
-   */
-  function PhoneNumberMatcher() {
-    var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var metadata = arguments.length > 2 ? arguments[2] : undefined;
-    _classCallCheck$7(this, PhoneNumberMatcher);
-    options = {
-      v2: options.v2,
-      defaultCallingCode: options.defaultCallingCode,
-      defaultCountry: options.defaultCountry && isSupportedCountry$1(options.defaultCountry, metadata) ? options.defaultCountry : undefined,
-      // Here it should've assigned a default value only if `options.leniency === undefined`.
-      leniency: options.leniency || (options.extended ? 'POSSIBLE' : 'VALID'),
-      // Here it should've assigned a default value only if `options.maxTries === undefined`.
-      maxTries: options.maxTries || MAX_SAFE_INTEGER
-    };
-
-    // Validate `leniency`.
-    // if (!options.leniency) {
-    // 	throw new TypeError('`leniency` is required')
-    // }
-    if (!Leniency[options.leniency]) {
-      throw new TypeError("Unknown leniency: \"".concat(options.leniency, "\""));
-    }
-    if (options.leniency !== 'POSSIBLE' && options.leniency !== 'VALID') {
-      throw new TypeError("Invalid `leniency`: \"".concat(options.leniency, "\". Supported values: \"POSSIBLE\", \"VALID\"."));
-    }
-
-    // Validate `maxTries`.
-    if (options.maxTries < 0) {
-      throw new TypeError('`maxTries` must be `>= 0`');
-    }
-    this.text = text;
-    this.options = options;
-    this.metadata = metadata;
-
-    // The degree of phone number validation.
-    this.leniency = Leniency[options.leniency];
-
-    /** The maximum number of retries after matching an invalid number. */
-    this.maxTries = options.maxTries;
-
-    // Compile regular expressions.
-    this.PATTERN = new RegExp(PATTERN, 'ig');
-    this.INNER_MATCHES = INNER_MATCHES.map(function (pattern) {
-      return new RegExp(pattern, 'g');
-    });
-
-    /** The iteration tristate. */
-    this.state = 'NOT_READY';
-
-    /** The next index to start searching at. Undefined in {@link State#DONE}. */
-    this.searchIndex = 0;
-
-    // A cache for frequently used country-specific regular expressions. Set to 32 to cover ~2-3
-    // countries being used for the same doc with ~10 patterns for each country. Some pages will have
-    // a lot more countries in use, but typically fewer numbers for each so expanding the cache for
-    // that use-case won't have a lot of benefit.
-    this.regExpCache = new RegExpCache(32);
-  }
-
-  /**
-   * Attempts to find the next subsequence in the searched sequence on or after {@code searchIndex}
-   * that represents a phone number. Returns the next match, null if none was found.
-   *
-   * @param index  the search index to start searching at
-   * @return  the phone number match found, null if none can be found
-   */
-  return _createClass$7(PhoneNumberMatcher, [{
-    key: "find",
-    value: function find(index) {
-      // Reset the regular expression.
-      this.PATTERN.lastIndex = index;
-      var matches;
-      while (this.maxTries > 0 && (matches = this.PATTERN.exec(this.text)) !== null) {
-        var candidate = matches[0];
-        var offset = matches.index;
-        candidate = parsePreCandidate(candidate);
-        if (isValidPreCandidate(candidate, offset, this.text)) {
-          var match =
-          // Try to come up with a valid match given the entire candidate.
-          this.parseAndVerify(candidate, offset, this.text)
-          // If that failed, try to find an "inner match" -
-          // there might be a phone number within this candidate.
-          || this.extractInnerMatch(candidate, offset, this.text);
-          if (match) {
-            if (this.options.v2) {
-              return {
-                startsAt: match.startsAt,
-                endsAt: match.endsAt,
-                number: match.phoneNumber
-              };
-            } else {
-              var phoneNumber = match.phoneNumber;
-              var result = {
-                startsAt: match.startsAt,
-                endsAt: match.endsAt,
-                phone: phoneNumber.nationalNumber
-              };
-              if (phoneNumber.country) {
-                /* istanbul ignore if */
-                if (USE_NON_GEOGRAPHIC_COUNTRY_CODE$1 && country === '001') {
-                  result.countryCallingCode = phoneNumber.countryCallingCode;
-                } else {
-                  result.country = phoneNumber.country;
-                }
-              } else {
-                result.countryCallingCode = phoneNumber.countryCallingCode;
-              }
-              if (phoneNumber.ext) {
-                result.ext = phoneNumber.ext;
-              }
-              return result;
-            }
-          }
-        }
-        this.maxTries--;
-      }
-    }
-
-    /**
-     * Attempts to extract a match from `substring`
-     * if the substring itself does not qualify as a match.
-     */
-  }, {
-    key: "extractInnerMatch",
-    value: function extractInnerMatch(substring, offset, text) {
-      for (var _iterator = _createForOfIteratorHelperLoose$3(this.INNER_MATCHES), _step; !(_step = _iterator()).done;) {
-        var innerMatchRegExp = _step.value;
-        // Reset regular expression.
-        innerMatchRegExp.lastIndex = 0;
-        var isFirstMatch = true;
-        var candidateMatch = void 0;
-        while (this.maxTries > 0 && (candidateMatch = innerMatchRegExp.exec(substring)) !== null) {
-          if (isFirstMatch) {
-            // We should handle any group before this one too.
-            var _candidate = trimAfterFirstMatch(UNWANTED_END_CHAR_PATTERN, substring.slice(0, candidateMatch.index));
-            var _match = this.parseAndVerify(_candidate, offset, text);
-            if (_match) {
-              return _match;
-            }
-            this.maxTries--;
-            isFirstMatch = false;
-          }
-          var candidate = trimAfterFirstMatch(UNWANTED_END_CHAR_PATTERN, candidateMatch[1]);
-
-          // Java code does `groupMatcher.start(1)` here,
-          // but there's no way in javascript to get a `candidate` start index,
-          // therefore resort to using this kind of an approximation.
-          // (`groupMatcher` is called `candidateInSubstringMatch` in this javascript port)
-          // https://stackoverflow.com/questions/15934353/get-index-of-each-capture-in-a-javascript-regex
-          var candidateIndexGuess = substring.indexOf(candidate, candidateMatch.index);
-          var match = this.parseAndVerify(candidate, offset + candidateIndexGuess, text);
-          if (match) {
-            return match;
-          }
-          this.maxTries--;
-        }
-      }
-    }
-
-    /**
-     * Parses a phone number from the `candidate` using `parse` and
-     * verifies it matches the requested `leniency`. If parsing and verification succeed,
-     * a corresponding `PhoneNumberMatch` is returned, otherwise this method returns `null`.
-     *
-     * @param candidate  the candidate match
-     * @param offset  the offset of {@code candidate} within {@link #text}
-     * @return  the parsed and validated phone number match, or null
-     */
-  }, {
-    key: "parseAndVerify",
-    value: function parseAndVerify(candidate, offset, text) {
-      if (!isValidCandidate(candidate, offset, text, this.options.leniency)) {
-        return;
-      }
-      var phoneNumber = parsePhoneNumber$1(candidate, {
-        extended: true,
-        defaultCountry: this.options.defaultCountry,
-        defaultCallingCode: this.options.defaultCallingCode
-      }, this.metadata);
-      if (!phoneNumber) {
-        return;
-      }
-      if (!phoneNumber.isPossible()) {
-        return;
-      }
-      if (this.leniency(phoneNumber, {
-        candidate: candidate,
-        defaultCountry: this.options.defaultCountry,
-        metadata: this.metadata,
-        regExpCache: this.regExpCache
-      })) {
-        return {
-          startsAt: offset,
-          endsAt: offset + candidate.length,
-          phoneNumber: phoneNumber
-        };
-      }
-    }
-  }, {
-    key: "hasNext",
-    value: function hasNext() {
-      if (this.state === 'NOT_READY') {
-        this.lastMatch = this.find(this.searchIndex);
-        if (this.lastMatch) {
-          this.searchIndex = this.lastMatch.endsAt;
-          this.state = 'READY';
-        } else {
-          this.state = 'DONE';
-        }
-      }
-      return this.state === 'READY';
-    }
-  }, {
-    key: "next",
-    value: function next() {
-      // Check the state and find the next match as a side-effect if necessary.
-      if (!this.hasNext()) {
-        throw new Error('No next element');
-      }
-
-      // Don't retain that memory any longer than necessary.
-      var result = this.lastMatch;
-      this.lastMatch = null;
-      this.state = 'NOT_READY';
-      return result;
-    }
-  }]);
-}();
-
-function findNumbers$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  var matcher = new PhoneNumberMatcher$1(text, options, metadata);
-  var results = [];
-  while (matcher.hasNext()) {
-    results.push(matcher.next());
-  }
-  return results;
-}
-
-function _typeof$9(o) { "@babel/helpers - typeof"; return _typeof$9 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$9(o); }
-function _defineProperty$2(e, r, t) { return (r = _toPropertyKey$9(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$9(t) { var i = _toPrimitive$9(t, "string"); return "symbol" == _typeof$9(i) ? i : i + ""; }
-function _toPrimitive$9(t, r) { if ("object" != _typeof$9(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$9(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-
-/**
- * @return ES6 `for ... of` iterator.
- */
-function searchNumbers$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  var matcher = new PhoneNumberMatcher$1(text, options, metadata);
-  return _defineProperty$2({}, Symbol.iterator, function () {
-    return {
-      next: function next() {
-        if (matcher.hasNext()) {
-          return {
-            done: false,
-            value: matcher.next()
-          };
-        }
-        return {
-          done: true
-        };
-      }
-    };
-  });
-}
-
-function _typeof$8(o) { "@babel/helpers - typeof"; return _typeof$8 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$8(o); }
-function ownKeys$1(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread$1(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$1(Object(t), !0).forEach(function (r) { _defineProperty$1(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$1(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty$1(e, r, t) { return (r = _toPropertyKey$8(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$8(t) { var i = _toPrimitive$8(t, "string"); return "symbol" == _typeof$8(i) ? i : i + ""; }
-function _toPrimitive$8(t, r) { if ("object" != _typeof$8(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$8(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function findPhoneNumbersInText$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  var matcher = new PhoneNumberMatcher$1(text, _objectSpread$1(_objectSpread$1({}, options), {}, {
-    v2: true
-  }), metadata);
-  var results = [];
-  while (matcher.hasNext()) {
-    results.push(matcher.next());
-  }
-  return results;
-}
-
-function _typeof$7(o) { "@babel/helpers - typeof"; return _typeof$7 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$7(o); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey$7(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey$7(t) { var i = _toPrimitive$7(t, "string"); return "symbol" == _typeof$7(i) ? i : i + ""; }
-function _toPrimitive$7(t, r) { if ("object" != _typeof$7(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$7(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function searchPhoneNumbersInText$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  var matcher = new PhoneNumberMatcher$1(text, _objectSpread(_objectSpread({}, options), {}, {
-    v2: true
-  }), metadata);
-  return _defineProperty({}, Symbol.iterator, function () {
-    return {
-      next: function next() {
-        if (matcher.hasNext()) {
-          return {
-            done: false,
-            value: matcher.next()
-          };
-        }
-        return {
-          done: true
-        };
-      }
-    };
-  });
-}
-
-function _typeof$6(o) { "@babel/helpers - typeof"; return _typeof$6 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$6(o); }
-function _classCallCheck$6(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$6(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$6(o.key), o); } }
-function _createClass$6(e, r, t) { return r && _defineProperties$6(e.prototype, r), t && _defineProperties$6(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$6(t) { var i = _toPrimitive$6(t, "string"); return "symbol" == _typeof$6(i) ? i : i + ""; }
-function _toPrimitive$6(t, r) { if ("object" != _typeof$6(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$6(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _typeof$5(o) { "@babel/helpers - typeof"; return _typeof$5 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$5(o); }
+function _classCallCheck$5(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties$5(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey$5(o.key), o); } }
+function _createClass$5(e, r, t) { return r && _defineProperties$5(e.prototype, r), Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _toPropertyKey$5(t) { var i = _toPrimitive$5(t, "string"); return "symbol" == _typeof$5(i) ? i : i + ""; }
+function _toPrimitive$5(t, r) { if ("object" != _typeof$5(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$5(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return (String )(t); }
 // This "state" object simply holds the state of the "AsYouType" parser:
 //
 // * `country?: string` — The exact country of the phone number, if it could be determined.
@@ -4445,11 +3303,11 @@ var AsYouTypeState = /*#__PURE__*/function () {
   function AsYouTypeState(_ref) {
     var onCountryChange = _ref.onCountryChange,
       onCallingCodeChange = _ref.onCallingCodeChange;
-    _classCallCheck$6(this, AsYouTypeState);
+    _classCallCheck$5(this, AsYouTypeState);
     this.onCountryChange = onCountryChange;
     this.onCallingCodeChange = onCallingCodeChange;
   }
-  return _createClass$6(AsYouTypeState, [{
+  return _createClass$5(AsYouTypeState, [{
     key: "reset",
     value: function reset(_ref2) {
       var country = _ref2.country,
@@ -4546,30 +3404,12 @@ var AsYouTypeState = /*#__PURE__*/function () {
   }]);
 }();
 
-function _createForOfIteratorHelperLoose$2(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$4(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _createForOfIteratorHelperLoose$2(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$4(r)) || e) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: true } : { done: false, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray$4(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$4(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$4(r, a) : void 0; } }
 function _arrayLikeToArray$4(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 // Should be the same as `DIGIT_PLACEHOLDER` in `libphonenumber-metadata-generator`.
 var DIGIT_PLACEHOLDER = 'x'; // '\u2008' (punctuation space)
 var DIGIT_PLACEHOLDER_MATCHER = new RegExp(DIGIT_PLACEHOLDER);
-
-// Counts all occurences of a symbol in a string.
-// Unicode-unsafe (because using `.split()`).
-function countOccurences(symbol, string) {
-  var count = 0;
-  // Using `.split('')` to iterate through a string here
-  // to avoid requiring `Symbol.iterator` polyfill.
-  // `.split('')` is generally not safe for Unicode,
-  // but in this particular case for counting brackets it is safe.
-  // for (const character of string)
-  for (var _iterator = _createForOfIteratorHelperLoose$2(string.split('')), _step; !(_step = _iterator()).done;) {
-    var character = _step.value;
-    if (character === symbol) {
-      count++;
-    }
-  }
-  return count;
-}
 
 // Repeats a string (or a symbol) N times.
 // http://stackoverflow.com/questions/202605/repeat-string-javascript
@@ -4592,19 +3432,6 @@ function cutAndStripNonPairedParens(string, cutBeforeIndex) {
     cutBeforeIndex++;
   }
   return stripNonPairedParens(string.slice(0, cutBeforeIndex));
-}
-function closeNonPairedParens(template, cut_before) {
-  var retained_template = template.slice(0, cut_before);
-  var opening_braces = countOccurences('(', retained_template);
-  var closing_braces = countOccurences(')', retained_template);
-  var dangling_braces = opening_braces - closing_braces;
-  while (dangling_braces > 0 && cut_before < template.length) {
-    if (template[cut_before] === ')') {
-      dangling_braces--;
-    }
-    cut_before++;
-  }
-  return template.slice(0, cut_before);
 }
 function stripNonPairedParens(string) {
   var dangling_braces = [];
@@ -4649,13 +3476,11 @@ function populateTemplateWithDigits(template, position, digits) {
 }
 
 function formatCompleteNumber(state, format, _ref) {
-  var metadata = _ref.metadata,
-    shouldTryNationalPrefixFormattingRule = _ref.shouldTryNationalPrefixFormattingRule,
+  var shouldTryNationalPrefixFormattingRule = _ref.shouldTryNationalPrefixFormattingRule,
     getSeparatorAfterNationalPrefix = _ref.getSeparatorAfterNationalPrefix;
   var matcher = new RegExp("^(?:".concat(format.pattern(), ")$"));
   if (matcher.test(state.nationalSignificantNumber)) {
     return formatNationalNumberWithAndWithoutNationalPrefixFormattingRule(state, format, {
-      metadata: metadata,
       shouldTryNationalPrefixFormattingRule: shouldTryNationalPrefixFormattingRule,
       getSeparatorAfterNationalPrefix: getSeparatorAfterNationalPrefix
     });
@@ -4665,15 +3490,8 @@ function canFormatCompleteNumber(nationalSignificantNumber, country, metadata) {
   return checkNumberLength(nationalSignificantNumber, country, metadata) === 'IS_POSSIBLE';
 }
 function formatNationalNumberWithAndWithoutNationalPrefixFormattingRule(state, format, _ref2) {
-  var metadata = _ref2.metadata,
-    shouldTryNationalPrefixFormattingRule = _ref2.shouldTryNationalPrefixFormattingRule,
+  var shouldTryNationalPrefixFormattingRule = _ref2.shouldTryNationalPrefixFormattingRule,
     getSeparatorAfterNationalPrefix = _ref2.getSeparatorAfterNationalPrefix;
-  // `format` has already been checked for `nationalPrefix` requirement.
-
-  var nationalSignificantNumber = state.nationalSignificantNumber,
-    international = state.international,
-    nationalPrefix = state.nationalPrefix,
-    carrierCode = state.carrierCode;
 
   // Format the number with using `national_prefix_formatting_rule`.
   // If the resulting formatted number is a valid formatted number, then return it.
@@ -4688,9 +3506,7 @@ function formatNationalNumberWithAndWithoutNationalPrefixFormattingRule(state, f
   if (shouldTryNationalPrefixFormattingRule(format)) {
     var formattedNumber = formatNationalNumber(state, format, {
       useNationalPrefixFormattingRule: true,
-      getSeparatorAfterNationalPrefix: getSeparatorAfterNationalPrefix,
-      metadata: metadata
-    });
+      getSeparatorAfterNationalPrefix: getSeparatorAfterNationalPrefix});
     if (formattedNumber) {
       return formattedNumber;
     }
@@ -4699,20 +3515,14 @@ function formatNationalNumberWithAndWithoutNationalPrefixFormattingRule(state, f
   // Format the number without using `national_prefix_formatting_rule`.
   return formatNationalNumber(state, format, {
     useNationalPrefixFormattingRule: false,
-    getSeparatorAfterNationalPrefix: getSeparatorAfterNationalPrefix,
-    metadata: metadata
-  });
+    getSeparatorAfterNationalPrefix: getSeparatorAfterNationalPrefix});
 }
 function formatNationalNumber(state, format, _ref3) {
-  var metadata = _ref3.metadata,
-    useNationalPrefixFormattingRule = _ref3.useNationalPrefixFormattingRule,
+  var useNationalPrefixFormattingRule = _ref3.useNationalPrefixFormattingRule,
     getSeparatorAfterNationalPrefix = _ref3.getSeparatorAfterNationalPrefix;
   var formattedNationalNumber = formatNationalNumberUsingFormat(state.nationalSignificantNumber, format, {
-    carrierCode: state.carrierCode,
     useInternationalFormat: state.international,
-    withNationalPrefix: useNationalPrefixFormattingRule,
-    metadata: metadata
-  });
+    withNationalPrefix: useNationalPrefixFormattingRule});
   if (!useNationalPrefixFormattingRule) {
     if (state.nationalPrefix) {
       // If a national prefix was extracted, then just prepend it,
@@ -4760,17 +3570,17 @@ function isValidFormattedNationalNumber(formattedNationalNumber, state) {
   return parseDigits(formattedNationalNumber) === state.getNationalDigits();
 }
 
-function _typeof$5(o) { "@babel/helpers - typeof"; return _typeof$5 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$5(o); }
-function _classCallCheck$5(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$5(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$5(o.key), o); } }
-function _createClass$5(e, r, t) { return r && _defineProperties$5(e.prototype, r), t && _defineProperties$5(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$5(t) { var i = _toPrimitive$5(t, "string"); return "symbol" == _typeof$5(i) ? i : i + ""; }
-function _toPrimitive$5(t, r) { if ("object" != _typeof$5(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$5(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _typeof$4(o) { "@babel/helpers - typeof"; return _typeof$4 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$4(o); }
+function _classCallCheck$4(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties$4(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey$4(o.key), o); } }
+function _createClass$4(e, r, t) { return r && _defineProperties$4(e.prototype, r), Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _toPropertyKey$4(t) { var i = _toPrimitive$4(t, "string"); return "symbol" == _typeof$4(i) ? i : i + ""; }
+function _toPrimitive$4(t, r) { if ("object" != _typeof$4(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$4(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return (String )(t); }
 var PatternParser = /*#__PURE__*/function () {
   function PatternParser() {
-    _classCallCheck$5(this, PatternParser);
+    _classCallCheck$4(this, PatternParser);
   }
-  return _createClass$5(PatternParser, [{
+  return _createClass$4(PatternParser, [{
     key: "parse",
     value: function parse(pattern) {
       this.context = [{
@@ -4962,21 +3772,21 @@ function expandSingleElementArray(array) {
   return array;
 }
 
-function _createForOfIteratorHelperLoose$1(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$3(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _createForOfIteratorHelperLoose$1(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$3(r)) || e) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: true } : { done: false, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray$3(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$3(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$3(r, a) : void 0; } }
 function _arrayLikeToArray$3(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _typeof$4(o) { "@babel/helpers - typeof"; return _typeof$4 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$4(o); }
-function _classCallCheck$4(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$4(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$4(o.key), o); } }
-function _createClass$4(e, r, t) { return r && _defineProperties$4(e.prototype, r), t && _defineProperties$4(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$4(t) { var i = _toPrimitive$4(t, "string"); return "symbol" == _typeof$4(i) ? i : i + ""; }
-function _toPrimitive$4(t, r) { if ("object" != _typeof$4(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$4(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _typeof$3(o) { "@babel/helpers - typeof"; return _typeof$3 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$3(o); }
+function _classCallCheck$3(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties$3(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey$3(o.key), o); } }
+function _createClass$3(e, r, t) { return r && _defineProperties$3(e.prototype, r), Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _toPropertyKey$3(t) { var i = _toPrimitive$3(t, "string"); return "symbol" == _typeof$3(i) ? i : i + ""; }
+function _toPrimitive$3(t, r) { if ("object" != _typeof$3(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$3(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return (String )(t); }
 var PatternMatcher = /*#__PURE__*/function () {
   function PatternMatcher(pattern) {
-    _classCallCheck$4(this, PatternMatcher);
+    _classCallCheck$3(this, PatternMatcher);
     this.matchTree = new PatternParser().parse(pattern);
   }
-  return _createClass$4(PatternMatcher, [{
+  return _createClass$3(PatternMatcher, [{
     key: "match",
     value: function match(string) {
       var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
@@ -5163,15 +3973,15 @@ function _match(characters, tree, last) {
   }
 }
 
-function _typeof$3(o) { "@babel/helpers - typeof"; return _typeof$3 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$3(o); }
-function _createForOfIteratorHelperLoose(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$2(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _typeof$2(o) { "@babel/helpers - typeof"; return _typeof$2 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$2(o); }
+function _createForOfIteratorHelperLoose(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray$2(r)) || e) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: true } : { done: false, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray$2(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$2(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$2(r, a) : void 0; } }
 function _arrayLikeToArray$2(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _classCallCheck$3(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$3(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$3(o.key), o); } }
-function _createClass$3(e, r, t) { return r && _defineProperties$3(e.prototype, r), t && _defineProperties$3(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$3(t) { var i = _toPrimitive$3(t, "string"); return "symbol" == _typeof$3(i) ? i : i + ""; }
-function _toPrimitive$3(t, r) { if ("object" != _typeof$3(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$3(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _classCallCheck$2(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties$2(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey$2(o.key), o); } }
+function _createClass$2(e, r, t) { return r && _defineProperties$2(e.prototype, r), Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _toPropertyKey$2(t) { var i = _toPrimitive$2(t, "string"); return "symbol" == _typeof$2(i) ? i : i + ""; }
+function _toPrimitive$2(t, r) { if ("object" != _typeof$2(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$2(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return (String )(t); }
 
 // Used in phone number format template creation.
 // Could be any digit, I guess.
@@ -5186,17 +3996,9 @@ var LONGEST_DUMMY_PHONE_NUMBER = repeat(DUMMY_DIGIT, LONGEST_NATIONAL_PHONE_NUMB
 // us that we should separate the national prefix from the number when formatting.
 var NATIONAL_PREFIX_SEPARATORS_PATTERN = /[- ]/;
 
-// Deprecated: Google has removed some formatting pattern related code from their repo.
-// https://github.com/googlei18n/libphonenumber/commit/a395b4fef3caf57c4bc5f082e1152a4d2bd0ba4c
-// "We no longer have numbers in formatting matching patterns, only \d."
-// Because this library supports generating custom metadata
-// some users may still be using old metadata so the relevant
-// code seems to stay until some next major version update.
-var SUPPORT_LEGACY_FORMATTING_PATTERNS = true;
-
 // A pattern that is used to match character classes in regular expressions.
 // An example of a character class is "[1-4]".
-var CREATE_CHARACTER_CLASS_PATTERN = SUPPORT_LEGACY_FORMATTING_PATTERNS && function () {
+var CREATE_CHARACTER_CLASS_PATTERN = function () {
   return /\[([^\[\]])*\]/g;
 };
 
@@ -5205,7 +4007,7 @@ var CREATE_CHARACTER_CLASS_PATTERN = SUPPORT_LEGACY_FORMATTING_PATTERNS && funct
 // (8 and 0) are standalone digits, but the rest are not.
 // Two look-aheads are needed because the number following \\d could be a
 // two-digit number, since the phone number can be as long as 15 digits.
-var CREATE_STANDALONE_DIGIT_PATTERN = SUPPORT_LEGACY_FORMATTING_PATTERNS && function () {
+var CREATE_STANDALONE_DIGIT_PATTERN = function () {
   return /\d(?=[^,}][^,}])/g;
 };
 
@@ -5255,13 +4057,12 @@ var NON_ALTERING_FORMAT_REG_EXP = new RegExp('[' + VALID_PUNCTUATION + ']*' +
 var MIN_LEADING_DIGITS_LENGTH = 3;
 var AsYouTypeFormatter = /*#__PURE__*/function () {
   function AsYouTypeFormatter(_ref) {
-    var state = _ref.state,
-      metadata = _ref.metadata;
-    _classCallCheck$3(this, AsYouTypeFormatter);
+    var metadata = _ref.metadata;
+    _classCallCheck$2(this, AsYouTypeFormatter);
     this.metadata = metadata;
     this.resetFormat();
   }
-  return _createClass$3(AsYouTypeFormatter, [{
+  return _createClass$2(AsYouTypeFormatter, [{
     key: "resetFormat",
     value: function resetFormat() {
       this.chosenFormat = undefined;
@@ -5314,7 +4115,6 @@ var AsYouTypeFormatter = /*#__PURE__*/function () {
         for (var _iterator = _createForOfIteratorHelperLoose(this.matchingFormats), _step; !(_step = _iterator()).done;) {
           var _format = _step.value;
           var formattedCompleteNumber = formatCompleteNumber(state, _format, {
-            metadata: this.metadata,
             shouldTryNationalPrefixFormattingRule: function shouldTryNationalPrefixFormattingRule(format) {
               return _this.shouldTryNationalPrefixFormattingRule(format, {
                 international: state.international,
@@ -5607,7 +4407,7 @@ var AsYouTypeFormatter = /*#__PURE__*/function () {
       // (20|3)\d{4}. In those cases we quickly return.
       // (Though there's no such format in current metadata)
       /* istanbul ignore if */
-      if (SUPPORT_LEGACY_FORMATTING_PATTERNS && format.pattern().indexOf('|') >= 0) {
+      if (format.pattern().indexOf('|') >= 0) {
         return;
       }
       // Get formatting template for this phone number format
@@ -5712,7 +4512,7 @@ var AsYouTypeFormatter = /*#__PURE__*/function () {
       var pattern = format.pattern();
 
       /* istanbul ignore else */
-      if (SUPPORT_LEGACY_FORMATTING_PATTERNS) {
+      {
         pattern = pattern
         // Replace anything in the form of [..] with \d
         .replace(CREATE_CHARACTER_CLASS_PATTERN(), '\\d')
@@ -5877,18 +4677,18 @@ var AsYouTypeFormatter = /*#__PURE__*/function () {
   }]);
 }();
 
-function _typeof$2(o) { "@babel/helpers - typeof"; return _typeof$2 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$2(o); }
+function _typeof$1(o) { "@babel/helpers - typeof"; return _typeof$1 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$1(o); }
 function _slicedToArray$1(r, e) { return _arrayWithHoles$1(r) || _iterableToArrayLimit$1(r, e) || _unsupportedIterableToArray$1(r, e) || _nonIterableRest$1(); }
 function _nonIterableRest$1() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray$1(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray$1(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$1(r, a) : void 0; } }
 function _arrayLikeToArray$1(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit$1(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _iterableToArrayLimit$1(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = true, o = false; try { if (i = (t = t.call(r)).next, 0 === l) ; else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = true); } catch (r) { o = true, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles$1(r) { if (Array.isArray(r)) return r; }
-function _classCallCheck$2(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$2(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$2(o.key), o); } }
-function _createClass$2(e, r, t) { return r && _defineProperties$2(e.prototype, r), t && _defineProperties$2(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$2(t) { var i = _toPrimitive$2(t, "string"); return "symbol" == _typeof$2(i) ? i : i + ""; }
-function _toPrimitive$2(t, r) { if ("object" != _typeof$2(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$2(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _classCallCheck$1(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties$1(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey$1(o.key), o); } }
+function _createClass$1(e, r, t) { return r && _defineProperties$1(e.prototype, r), Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _toPropertyKey$1(t) { var i = _toPrimitive$1(t, "string"); return "symbol" == _typeof$1(i) ? i : i + ""; }
+function _toPrimitive$1(t, r) { if ("object" != _typeof$1(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof$1(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return (String )(t); }
 var VALID_FORMATTED_PHONE_NUMBER_DIGITS_PART = '[' + VALID_PUNCTUATION + VALID_DIGITS + ']+';
 var VALID_FORMATTED_PHONE_NUMBER_DIGITS_PART_PATTERN = new RegExp('^' + VALID_FORMATTED_PHONE_NUMBER_DIGITS_PART + '$', 'i');
 var VALID_FORMATTED_PHONE_NUMBER_PART = '(?:' + '[' + PLUS_CHARS + ']' + '[' + VALID_PUNCTUATION + VALID_DIGITS + ']*' + '|' + '[' + VALID_PUNCTUATION + VALID_DIGITS + ']+' + ')';
@@ -5904,13 +4704,13 @@ var AsYouTypeParser = /*#__PURE__*/function () {
       defaultCallingCode = _ref.defaultCallingCode,
       metadata = _ref.metadata,
       onNationalSignificantNumberChange = _ref.onNationalSignificantNumberChange;
-    _classCallCheck$2(this, AsYouTypeParser);
+    _classCallCheck$1(this, AsYouTypeParser);
     this.defaultCountry = defaultCountry;
     this.defaultCallingCode = defaultCallingCode;
     this.metadata = metadata;
     this.onNationalSignificantNumberChange = onNationalSignificantNumberChange;
   }
-  return _createClass$2(AsYouTypeParser, [{
+  return _createClass$1(AsYouTypeParser, [{
     key: "input",
     value: function input(text, state) {
       var _extractFormattedDigi = extractFormattedDigitsAndPlus(text),
@@ -6213,8 +5013,7 @@ var AsYouTypeParser = /*#__PURE__*/function () {
       // Also, don't re-extract an IDD prefix if has already been extracted.
       var international = state.international,
         IDDPrefix = state.IDDPrefix,
-        digits = state.digits,
-        nationalSignificantNumber = state.nationalSignificantNumber;
+        digits = state.digits;
       if (international || IDDPrefix) {
         return;
       }
@@ -6341,27 +5140,26 @@ function extractFormattedDigitsAndPlus(text) {
   return [formattedDigits, hasPlus];
 }
 
-function _typeof$1(o) { "@babel/helpers - typeof"; return _typeof$1 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof$1(o); }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = true, o = false; try { if (i = (t = t.call(r)).next, 0 === l) ; else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = true); } catch (r) { o = true, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function _classCallCheck$1(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties$1(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey$1(o.key), o); } }
-function _createClass$1(e, r, t) { return r && _defineProperties$1(e.prototype, r), t && _defineProperties$1(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey$1(t) { var i = _toPrimitive$1(t, "string"); return "symbol" == _typeof$1(i) ? i : i + ""; }
-function _toPrimitive$1(t, r) { if ("object" != _typeof$1(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof$1(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var USE_NON_GEOGRAPHIC_COUNTRY_CODE = false;
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), Object.defineProperty(e, "prototype", { writable: false }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return (String )(t); }
 var AsYouType$1 = /*#__PURE__*/function () {
   /**
    * @param {(string|object)?} [optionsOrDefaultCountry] - The default country used for parsing non-international phone numbers. Can also be an `options` object.
    * @param {Object} metadata
    */
   function AsYouType(optionsOrDefaultCountry, metadata) {
-    _classCallCheck$1(this, AsYouType);
-    this.metadata = new Metadata$1(metadata);
+    _classCallCheck(this, AsYouType);
+    this.metadata = new Metadata(metadata);
     var _this$getCountryAndCa = this.getCountryAndCallingCode(optionsOrDefaultCountry),
       _this$getCountryAndCa2 = _slicedToArray(_this$getCountryAndCa, 2),
       defaultCountry = _this$getCountryAndCa2[0],
@@ -6373,7 +5171,7 @@ var AsYouType$1 = /*#__PURE__*/function () {
     this.defaultCallingCode = defaultCallingCode;
     this.reset();
   }
-  return _createClass$1(AsYouType, [{
+  return _createClass(AsYouType, [{
     key: "getCountryAndCallingCode",
     value: function getCountryAndCallingCode(optionsOrDefaultCountry) {
       // Set `defaultCountry` and `defaultCallingCode` options.
@@ -6390,14 +5188,6 @@ var AsYouType$1 = /*#__PURE__*/function () {
       }
       if (defaultCountry && !this.metadata.hasCountry(defaultCountry)) {
         defaultCountry = undefined;
-      }
-      if (defaultCallingCode) {
-        /* istanbul ignore if */
-        if (USE_NON_GEOGRAPHIC_COUNTRY_CODE) {
-          if (this.metadata.isNonGeographicCallingCode(defaultCallingCode)) {
-            defaultCountry = '001';
-          }
-        }
       }
       return [defaultCountry, defaultCallingCode];
     }
@@ -6546,14 +5336,6 @@ var AsYouType$1 = /*#__PURE__*/function () {
     key: "_getCountry",
     value: function _getCountry() {
       var country = this.state.country;
-      /* istanbul ignore if */
-      if (USE_NON_GEOGRAPHIC_COUNTRY_CODE) {
-        // `AsYouType.getCountry()` returns `undefined`
-        // for "non-geographic" phone numbering plans.
-        if (country === '001') {
-          return;
-        }
-      }
       return country;
     }
   }, {
@@ -6743,7 +5525,7 @@ var AsYouType$1 = /*#__PURE__*/function () {
           // `state.country` and `state.callingCode` aren't required to be in sync.
           // For example, `state.country` could be `"AR"` and `state.callingCode` could be `undefined`.
           // So `state.country` and `state.callingCode` are totally independent.
-          var metadata = new Metadata$1(this.metadata.metadata);
+          var metadata = new Metadata(this.metadata.metadata);
           metadata.selectNumberingPlan(country);
           var _callingCode = metadata.numberingPlan.callingCode();
           var ambiguousCountries = this.metadata.getCountryCodesForCallingCode(_callingCode);
@@ -6758,7 +5540,7 @@ var AsYouType$1 = /*#__PURE__*/function () {
           }
         }
       }
-      var phoneNumber = new PhoneNumber$1(country || callingCode, nationalSignificantNumber, this.metadata.metadata);
+      var phoneNumber = new PhoneNumber(country || callingCode, nationalSignificantNumber, this.metadata.metadata);
       if (carrierCode) {
         phoneNumber.carrierCode = carrierCode;
       }
@@ -6829,76 +5611,9 @@ var AsYouType$1 = /*#__PURE__*/function () {
   }]);
 }();
 
-function getCountries$1(metadata) {
-  return new Metadata$1(metadata).getCountries();
-}
-
-function getExampleNumber$1(country, examples, metadata) {
-  if (examples[country]) {
-    return new PhoneNumber$1(country, examples[country], metadata);
-  }
-}
-
-/**
- * Formats a (possibly incomplete) phone number.
- * The phone number can be either in E.164 format
- * or in a form of national number digits.
- * @param {string} value - A possibly incomplete phone number. Either in E.164 format or in a form of national number digits.
- * @param {string|object} [optionsOrDefaultCountry] - A two-letter ("ISO 3166-1 alpha-2") country code, or an object of shape `{ defaultCountry?: string, defaultCallingCode?: string }`.
- * @return {string} Formatted (possibly incomplete) phone number.
- */
-function formatIncompletePhoneNumber$1(value, optionsOrDefaultCountry, metadata) {
-  if (!metadata) {
-    metadata = optionsOrDefaultCountry;
-    optionsOrDefaultCountry = undefined;
-  }
-  return new AsYouType$1(optionsOrDefaultCountry, metadata).input(value);
-}
-
-function parsePhoneNumberWithError() {
-	return withMetadataArgument(parsePhoneNumberWithError$1, arguments)
-}
-
-function parsePhoneNumber() {
-	return withMetadataArgument(parsePhoneNumber$1, arguments)
-}
-
-function isValidPhoneNumber() {
-	return withMetadataArgument(isValidPhoneNumber$1, arguments)
-}
-
-function isPossiblePhoneNumber() {
-	return withMetadataArgument(isPossiblePhoneNumber$1, arguments)
-}
-
 function validatePhoneNumberLength() {
 	return withMetadataArgument(validatePhoneNumberLength$1, arguments)
 }
-
-function findNumbers() {
-	return withMetadataArgument(findNumbers$1, arguments)
-}
-
-function searchNumbers() {
-	return withMetadataArgument(searchNumbers$1, arguments)
-}
-
-function findPhoneNumbersInText() {
-	return withMetadataArgument(findPhoneNumbersInText$1, arguments)
-}
-
-function searchPhoneNumbersInText() {
-	return withMetadataArgument(searchPhoneNumbersInText$1, arguments)
-}
-
-// Importing from a ".js" file is a workaround for Node.js "ES Modules"
-// importing system which is even uncapable of importing "*.json" files.
-
-function PhoneNumberMatcher(text, options) {
-	return PhoneNumberMatcher$1.call(this, text, options, metadata)
-}
-PhoneNumberMatcher.prototype = Object.create(PhoneNumberMatcher$1.prototype, {});
-PhoneNumberMatcher.prototype.constructor = PhoneNumberMatcher;
 
 // Importing from a ".js" file is a workaround for Node.js "ES Modules"
 // importing system which is even uncapable of importing "*.json" files.
@@ -6909,625 +5624,6 @@ function AsYouType(country) {
 
 AsYouType.prototype = Object.create(AsYouType$1.prototype, {});
 AsYouType.prototype.constructor = AsYouType;
-
-function isSupportedCountry() {
-	return withMetadataArgument(isSupportedCountry$1, arguments)
-}
-
-function getCountries() {
-	return withMetadataArgument(getCountries$1, arguments)
-}
-
-function getCountryCallingCode() {
-	return withMetadataArgument(getCountryCallingCode$1, arguments)
-}
-
-function getExtPrefix() {
-	return withMetadataArgument(getExtPrefix$1, arguments)
-}
-
-// Importing from a ".js" file is a workaround for Node.js "ES Modules"
-// importing system which is even uncapable of importing "*.json" files.
-
-function Metadata() {
-	return Metadata$1.call(this, metadata)
-}
-
-Metadata.prototype = Object.create(Metadata$1.prototype, {});
-Metadata.prototype.constructor = Metadata;
-
-function getExampleNumber() {
-	return withMetadataArgument(getExampleNumber$1, arguments)
-}
-
-function formatIncompletePhoneNumber() {
-	return withMetadataArgument(formatIncompletePhoneNumber$1, arguments)
-}
-
-// Importing from a ".js" file is a workaround for Node.js "ES Modules"
-// importing system which is even uncapable of importing "*.json" files.
-
-function PhoneNumber(number) {
-	return PhoneNumber$1.call(this, number, metadata)
-}
-PhoneNumber.prototype = Object.create(PhoneNumber$1.prototype, {});
-PhoneNumber.prototype.constructor = PhoneNumber;
-
-function parseNumber() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  return parse$1(text, options, metadata);
-}
-
-function parse() {
-	return withMetadataArgument(parseNumber, arguments)
-}
-
-function formatNumber$1() {
-  var _normalizeArguments = normalizeArguments$1(arguments),
-    input = _normalizeArguments.input,
-    format = _normalizeArguments.format,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  return formatNumber$2(input, format, options, metadata);
-}
-
-// Sort out arguments
-function normalizeArguments$1(args) {
-  // This line of code appeared to not work correctly with `babel`/`istanbul`:
-  // for some weird reason, it caused coverage less than 100%.
-  // That's because `babel`/`istanbul`, for some weird reason,
-  // apparently doesn't know how to properly exclude Babel polyfills from code coverage.
-  //
-  // const [arg_1, arg_2, arg_3, arg_4, arg_5] = Array.prototype.slice.call(args)
-
-  var arg_1 = args[0];
-  var arg_2 = args[1];
-  var arg_3 = args[2];
-  var arg_4 = args[3];
-  var arg_5 = args[4];
-  var input;
-  var format;
-  var options;
-  var metadata;
-
-  // Sort out arguments.
-
-  // If the phone number is passed as a string.
-  // `format('8005553535', ...)`.
-  if (typeof arg_1 === 'string') {
-    // If country code is supplied.
-    // `format('8005553535', 'RU', 'NATIONAL', [options], metadata)`.
-    if (typeof arg_3 === 'string') {
-      format = arg_3;
-      if (arg_5) {
-        options = arg_4;
-        metadata = arg_5;
-      } else {
-        metadata = arg_4;
-      }
-      input = parse$1(arg_1, {
-        defaultCountry: arg_2,
-        extended: true
-      }, metadata);
-    }
-    // Just an international phone number is supplied
-    // `format('+78005553535', 'NATIONAL', [options], metadata)`.
-    else {
-      if (typeof arg_2 !== 'string') {
-        throw new Error('`format` argument not passed to `formatNumber(number, format)`');
-      }
-      format = arg_2;
-      if (arg_4) {
-        options = arg_3;
-        metadata = arg_4;
-      } else {
-        metadata = arg_3;
-      }
-      input = parse$1(arg_1, {
-        extended: true
-      }, metadata);
-    }
-  }
-  // If the phone number is passed as a parsed number object.
-  // `format({ phone: '8005553535', country: 'RU' }, 'NATIONAL', [options], metadata)`.
-  else if (isObject(arg_1)) {
-    input = arg_1;
-    format = arg_2;
-    if (arg_4) {
-      options = arg_3;
-      metadata = arg_4;
-    } else {
-      metadata = arg_3;
-    }
-  } else throw new TypeError('A phone number must either be a string or an object of shape { phone, [country] }.');
-
-  // Legacy lowercase formats.
-  if (format === 'International') {
-    format = 'INTERNATIONAL';
-  } else if (format === 'National') {
-    format = 'NATIONAL';
-  }
-  return {
-    input: input,
-    format: format,
-    options: options,
-    metadata: metadata
-  };
-}
-
-function format() {
-	return withMetadataArgument(formatNumber$1, arguments)
-}
-
-// Finds out national phone number type (fixed line, mobile, etc)
-function getNumberType$1() {
-  var _normalizeArguments = normalizeArguments(arguments),
-    input = _normalizeArguments.input,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  // `parseNumber()` would return `{}` when no phone number could be parsed from the input.
-  if (!input.phone) {
-    return;
-  }
-  return getNumberType$2(input, options, metadata);
-}
-
-// Sort out arguments
-function normalizeArguments(args) {
-  // This line of code appeared to not work correctly with `babel`/`istanbul`:
-  // for some weird reason, it caused coverage less than 100%.
-  // That's because `babel`/`istanbul`, for some weird reason,
-  // apparently doesn't know how to properly exclude Babel polyfills from code coverage.
-  //
-  // const [arg_1, arg_2, arg_3, arg_4] = Array.prototype.slice.call(args)
-
-  var arg_1 = args[0];
-  var arg_2 = args[1];
-  var arg_3 = args[2];
-  var arg_4 = args[3];
-  var input;
-  var options = {};
-  var metadata;
-
-  // If the phone number is passed as a string.
-  // `getNumberType('88005553535', ...)`.
-  if (typeof arg_1 === 'string') {
-    // If "default country" argument is being passed
-    // then convert it to an `options` object.
-    // `getNumberType('88005553535', 'RU', metadata)`.
-    if (!isObject(arg_2)) {
-      if (arg_4) {
-        options = arg_3;
-        metadata = arg_4;
-      } else {
-        metadata = arg_3;
-      }
-
-      // `parse` extracts phone numbers from raw text,
-      // therefore it will cut off all "garbage" characters,
-      // while this `validate` function needs to verify
-      // that the phone number contains no "garbage"
-      // therefore the explicit `isViablePhoneNumber` check.
-      if (isViablePhoneNumber(arg_1)) {
-        input = parse$1(arg_1, {
-          defaultCountry: arg_2
-        }, metadata);
-      } else {
-        input = {};
-      }
-    }
-    // No "resrict country" argument is being passed.
-    // International phone number is passed.
-    // `getNumberType('+78005553535', metadata)`.
-    else {
-      if (arg_3) {
-        options = arg_2;
-        metadata = arg_3;
-      } else {
-        metadata = arg_2;
-      }
-
-      // `parse` extracts phone numbers from raw text,
-      // therefore it will cut off all "garbage" characters,
-      // while this `validate` function needs to verify
-      // that the phone number contains no "garbage"
-      // therefore the explicit `isViablePhoneNumber` check.
-      if (isViablePhoneNumber(arg_1)) {
-        input = parse$1(arg_1, undefined, metadata);
-      } else {
-        input = {};
-      }
-    }
-  }
-  // If the phone number is passed as a parsed phone number.
-  // `getNumberType({ phone: '88005553535', country: 'RU' }, ...)`.
-  else if (isObject(arg_1)) {
-    input = arg_1;
-    if (arg_3) {
-      options = arg_2;
-      metadata = arg_3;
-    } else {
-      metadata = arg_2;
-    }
-  } else throw new TypeError('A phone number must either be a string or an object of shape { phone, [country] }.');
-  return {
-    input: input,
-    options: options,
-    metadata: metadata
-  };
-}
-
-function getNumberType() {
-	return withMetadataArgument(getNumberType$1, arguments)
-}
-
-/**
- * Checks if a given phone number is possible.
- * Which means it only checks phone number length
- * and doesn't test any regular expressions.
- *
- * Examples:
- *
- * ```js
- * isPossibleNumber('+78005553535', metadata)
- * isPossibleNumber('8005553535', 'RU', metadata)
- * isPossibleNumber('88005553535', 'RU', metadata)
- * isPossibleNumber({ phone: '8005553535', country: 'RU' }, metadata)
- * ```
- */
-function isPossibleNumber$1() {
-  var _normalizeArguments = normalizeArguments(arguments),
-    input = _normalizeArguments.input,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  // `parseNumber()` would return `{}` when no phone number could be parsed from the input.
-  if (!input.phone && !(options && options.v2)) {
-    return false;
-  }
-  return isPossiblePhoneNumber$2(input, options, metadata);
-}
-
-// Deprecated.
-
-
-function isPossibleNumber() {
-	return withMetadataArgument(isPossibleNumber$1, arguments)
-}
-
-// Finds out national phone number type (fixed line, mobile, etc)
-function isValidNumber$1() {
-  var _normalizeArguments = normalizeArguments(arguments),
-    input = _normalizeArguments.input,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  // `parseNumber()` would return `{}` when no phone number could be parsed from the input.
-  if (!input.phone) {
-    return false;
-  }
-  return isValidNumber$2(input, options, metadata);
-}
-
-// Deprecated.
-
-
-function isValidNumber() {
-	return withMetadataArgument(isValidNumber$1, arguments)
-}
-
-/**
- * Checks if a given phone number is valid within a given region.
- * Is just an alias for `phoneNumber.isValid() && phoneNumber.country === country`.
- * https://github.com/googlei18n/libphonenumber/blob/master/FAQ.md#when-should-i-use-isvalidnumberforregion
- */
-function isValidNumberForRegion$2(input, country, options, metadata) {
-  // If assigning the `{}` default value is moved to the arguments above,
-  // code coverage would decrease for some weird reason.
-  options = options || {};
-  return input.country === country && isValidNumber$2(input, options, metadata);
-}
-
-// This function has been deprecated and is not exported as
-// `isValidPhoneNumberForCountry()` or `isValidPhoneNumberForRegion()`.
-//
-// The rationale is:
-//
-// * We don't use the "region" word, so "country" would be better.
-//
-// * It could be substituted with:
-//
-// ```js
-// export default function isValidPhoneNumberForCountry(phoneNumberString, country) {
-// 	const phoneNumber = parsePhoneNumber(phoneNumberString, {
-// 		defaultCountry: country,
-// 		// Demand that the entire input string must be a phone number.
-// 		// Otherwise, it would "extract" a phone number from an input string.
-// 		extract: false
-// 	})
-// 	if (!phoneNumber) {
-// 		return false
-// 	}
-// 	if (phoneNumber.country !== country) {
-// 		return false
-// 	}
-// 	return phoneNumber.isValid()
-// }
-// ```
-//
-// * Same function could be used for `isPossiblePhoneNumberForCountry()`
-//   by replacing `isValid()` with `isPossible()`.
-//
-// * The reason why this function is not exported is because its result is ambiguous.
-//   Suppose `false` is returned. It could mean any of:
-//   * Not a phone number.
-//   * The phone number is valid but belongs to another country or another calling code.
-//   * The phone number belongs to the correct country but is not valid digit-wise.
-//   All those three cases should be handled separately from a "User Experience" standpoint.
-//   Simply showing "Invalid phone number" error in all of those cases would be lazy UX.
-
-function isValidNumberForRegion$1(number, country, metadata) {
-  if (typeof number !== 'string') {
-    throw new TypeError('number must be a string');
-  }
-  if (typeof country !== 'string') {
-    throw new TypeError('country must be a string');
-  }
-  // `parse` extracts phone numbers from raw text,
-  // therefore it will cut off all "garbage" characters,
-  // while this `validate` function needs to verify
-  // that the phone number contains no "garbage"
-  // therefore the explicit `isViablePhoneNumber` check.
-  var input;
-  if (isViablePhoneNumber(number)) {
-    input = parse$1(number, {
-      defaultCountry: country
-    }, metadata);
-  } else {
-    input = {};
-  }
-  return isValidNumberForRegion$2(input, country, undefined, metadata);
-}
-
-function isValidNumberForRegion() {
-	return withMetadataArgument(isValidNumberForRegion$1, arguments)
-}
-
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
-function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
-function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var WHITESPACE_IN_THE_BEGINNING_PATTERN = new RegExp('^[' + WHITESPACE + ']+');
-var PUNCTUATION_IN_THE_END_PATTERN = new RegExp('[' + VALID_PUNCTUATION + ']+$');
-
-/**
- * Extracts a parseable phone number including any opening brackets, etc.
- * @param  {string} text - Input.
- * @return {object} `{ ?number, ?startsAt, ?endsAt }`.
- */
-var PhoneNumberSearch$1 = /*#__PURE__*/function () {
-  function PhoneNumberSearch(text, options, metadata) {
-    _classCallCheck(this, PhoneNumberSearch);
-    this.text = text;
-    // If assigning the `{}` default value is moved to the arguments above,
-    // code coverage would decrease for some weird reason.
-    this.options = options || {};
-    this.metadata = metadata;
-
-    // Iteration tristate.
-    this.state = 'NOT_READY';
-    this.regexp = new RegExp(VALID_PHONE_NUMBER_WITH_EXTENSION, 'ig');
-  }
-  return _createClass(PhoneNumberSearch, [{
-    key: "find",
-    value: function find() {
-      var matches = this.regexp.exec(this.text);
-      if (!matches) {
-        return;
-      }
-      var number = matches[0];
-      var startsAt = matches.index;
-      number = number.replace(WHITESPACE_IN_THE_BEGINNING_PATTERN, '');
-      startsAt += matches[0].length - number.length;
-      // Fixes not parsing numbers with whitespace in the end.
-      // Also fixes not parsing numbers with opening parentheses in the end.
-      // https://github.com/catamphetamine/libphonenumber-js/issues/252
-      number = number.replace(PUNCTUATION_IN_THE_END_PATTERN, '');
-      number = parsePreCandidate(number);
-      var result = this.parseCandidate(number, startsAt);
-      if (result) {
-        return result;
-      }
-
-      // Tail recursion.
-      // Try the next one if this one is not a valid phone number.
-      return this.find();
-    }
-  }, {
-    key: "parseCandidate",
-    value: function parseCandidate(number, startsAt) {
-      if (!isValidPreCandidate(number, startsAt, this.text)) {
-        return;
-      }
-
-      // Don't parse phone numbers which are non-phone numbers
-      // due to being part of something else (e.g. a UUID).
-      // https://github.com/catamphetamine/libphonenumber-js/issues/213
-      // Copy-pasted from Google's `PhoneNumberMatcher.js` (`.parseAndValidate()`).
-      if (!isValidCandidate(number, startsAt, this.text, this.options.extended ? 'POSSIBLE' : 'VALID')) {
-        return;
-      }
-
-      // // Prepend any opening brackets left behind by the
-      // // `PHONE_NUMBER_START_PATTERN` regexp.
-      // const text_before_number = text.slice(this.searching_from, startsAt)
-      // const full_number_starts_at = text_before_number.search(BEFORE_NUMBER_DIGITS_PUNCTUATION)
-      // if (full_number_starts_at >= 0) {
-      // 	number = text_before_number.slice(full_number_starts_at) + number
-      // 	startsAt = full_number_starts_at
-      // }
-      //
-      // this.searching_from = matches.lastIndex
-
-      var result = parse$1(number, this.options, this.metadata);
-      if (!result.phone) {
-        return;
-      }
-      result.startsAt = startsAt;
-      result.endsAt = startsAt + number.length;
-      return result;
-    }
-  }, {
-    key: "hasNext",
-    value: function hasNext() {
-      if (this.state === 'NOT_READY') {
-        this.last_match = this.find();
-        if (this.last_match) {
-          this.state = 'READY';
-        } else {
-          this.state = 'DONE';
-        }
-      }
-      return this.state === 'READY';
-    }
-  }, {
-    key: "next",
-    value: function next() {
-      // Check the state and find the next match as a side-effect if necessary.
-      if (!this.hasNext()) {
-        throw new Error('No next element');
-      }
-      // Don't retain that memory any longer than necessary.
-      var result = this.last_match;
-      this.last_match = null;
-      this.state = 'NOT_READY';
-      return result;
-    }
-  }]);
-}();
-
-// This is a legacy function.
-// Use `findNumbers()` instead.
-
-
-/**
- * Regexp of all possible ways to write extensions, for use when parsing. This
- * will be run as a case-insensitive regexp match. Wide character versions are
- * also provided after each ASCII version. There are three regular expressions
- * here. The first covers RFC 3966 format, where the extension is added using
- * ';ext='. The second more generic one starts with optional white space and
- * ends with an optional full stop (.), followed by zero or more spaces/tabs
- * /commas and then the numbers themselves. The other one covers the special
- * case of American numbers where the extension is written with a hash at the
- * end, such as '- 503#'. Note that the only capturing groups should be around
- * the digits that you want to capture as part of the extension, or else parsing
- * will fail! We allow two options for representing the accented o - the
- * character itself, and one in the unicode decomposed form with the combining
- * acute accent.
- */
-var EXTN_PATTERNS_FOR_PARSING = createExtensionPattern('parsing');
-
-// // Regular expression for getting opening brackets for a valid number
-// // found using `PHONE_NUMBER_START_PATTERN` for prepending those brackets to the number.
-// const BEFORE_NUMBER_DIGITS_PUNCTUATION = new RegExp('[' + OPENING_BRACKETS + ']+' + '[' + WHITESPACE + ']*' + '$')
-
-// const VALID_PRECEDING_CHARACTER_PATTERN = /[^a-zA-Z0-9]/
-
-function findPhoneNumbers$2(text, options, metadata) {
-  /* istanbul ignore if */
-  if (options === undefined) {
-    options = {};
-  }
-  var search = new PhoneNumberSearch$1(text, options, metadata);
-  var phones = [];
-  while (search.hasNext()) {
-    phones.push(search.next());
-  }
-  return phones;
-}
-
-/**
- * @return ES6 `for ... of` iterator.
- */
-function searchPhoneNumbers$2(text, options, metadata) {
-  /* istanbul ignore if */
-  if (options === undefined) {
-    options = {};
-  }
-  var search = new PhoneNumberSearch$1(text, options, metadata);
-  var iterator = function iterator() {
-    return {
-      next: function next() {
-        if (search.hasNext()) {
-          return {
-            done: false,
-            value: search.next()
-          };
-        }
-        return {
-          done: true
-        };
-      }
-    };
-  };
-
-  // This line of code didn't really work with `babel`/`istanbul`:
-  // for some weird reason, it showed code coverage less than 100%.
-  // That's because `babel`/`istanbul`, for some weird reason,
-  // apparently doesn't know how to properly exclude Babel polyfills from code coverage.
-  //
-  // const iterable = { [Symbol.iterator]: iterator }
-
-  var iterable = {};
-  iterable[Symbol.iterator] = iterator;
-  return iterable;
-}
-
-// This is a legacy function.
-// Use `findNumbers()` instead.
-
-function findPhoneNumbers$1() {
-  var _normalizeArguments = normalizeArguments$2(arguments),
-    text = _normalizeArguments.text,
-    options = _normalizeArguments.options,
-    metadata = _normalizeArguments.metadata;
-  return findPhoneNumbers$2(text, options, metadata);
-}
-
-/**
- * @return ES6 `for ... of` iterator.
- */
-function searchPhoneNumbers$1() {
-  var _normalizeArguments2 = normalizeArguments$2(arguments),
-    text = _normalizeArguments2.text,
-    options = _normalizeArguments2.options,
-    metadata = _normalizeArguments2.metadata;
-  return searchPhoneNumbers$2(text, options, metadata);
-}
-
-function findPhoneNumbers() {
-	return withMetadataArgument(findPhoneNumbers$1, arguments)
-}
-
-function searchPhoneNumbers() {
-	return withMetadataArgument(searchPhoneNumbers$1, arguments)
-}
-
-// Importing from a ".js" file is a workaround for Node.js "ES Modules"
-// importing system which is even uncapable of importing "*.json" files.
-
-function PhoneNumberSearch(text, options) {
-	PhoneNumberSearch$1.call(this, text, options, metadata);
-}
-
-// Deprecated.
-PhoneNumberSearch.prototype = Object.create(PhoneNumberSearch$1.prototype, {});
-PhoneNumberSearch.prototype.constructor = PhoneNumberSearch;
-
-// `parsePhoneNumber()` named export has been renamed to `parsePhoneNumberWithError()`.
 
 const required = (type, value, lang = 'en') => {
     if (type === 'phone') {
@@ -7734,5 +5830,5 @@ const YaseerForm = class {
 };
 YaseerForm.style = yaseerFormCss;
 
-export { YaseerForm as yaseer_form };
-//# sourceMappingURL=yaseer-form.entry.esm.js.map
+export { FormBuilderComponent as form_builder, YaseerForm as yaseer_form };
+//# sourceMappingURL=form-builder.yaseer-form.entry.js.map

@@ -1,5 +1,5 @@
-import { r as registerInstance, a as createEvent, h } from './index-CgIiIA7J.js';
-import { g as getCountryPropByKey, s as sortedCountriesList } from './countriesList-BzTu4oFk.js';
+import { r as registerInstance, c as createEvent, h } from './index-DqB_q70x.js';
+import { g as getCountryPropByKey, s as sortedCountriesList } from './countriesList-CkZ5wZFN.js';
 
 const flags = {
     AFG: "🇦🇫", // Afghanistan * 
@@ -228,8 +228,8 @@ const phoneNumberFieldCss = "";
 const PhoneNumberField = class {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.valueChanged = createEvent(this, "valueChanged", 7);
-        this.fieldBlurred = createEvent(this, "fieldBlurred", 7);
+        this.valueChanged = createEvent(this, "valueChanged");
+        this.fieldBlurred = createEvent(this, "fieldBlurred");
     }
     field;
     language;
@@ -276,4 +276,4 @@ const PhoneNumberField = class {
 PhoneNumberField.style = phoneNumberFieldCss;
 
 export { PhoneNumberField as phone_number_field };
-//# sourceMappingURL=phone-number-field.entry.esm.js.map
+//# sourceMappingURL=phone-number-field.entry.js.map

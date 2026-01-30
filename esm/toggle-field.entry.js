@@ -1,12 +1,12 @@
-import { r as registerInstance, a as createEvent, h } from './index-CgIiIA7J.js';
+import { r as registerInstance, c as createEvent, h } from './index-DqB_q70x.js';
 
 const toggleFieldCss = "";
 
 const ToggleField = class {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.valueChanged = createEvent(this, "valueChanged", 7);
-        this.fieldBlurred = createEvent(this, "fieldBlurred", 7);
+        this.valueChanged = createEvent(this, "valueChanged");
+        this.fieldBlurred = createEvent(this, "fieldBlurred");
     }
     field;
     isChecked;
@@ -55,4 +55,4 @@ const ToggleField = class {
 ToggleField.style = toggleFieldCss;
 
 export { ToggleField as toggle_field };
-//# sourceMappingURL=toggle-field.entry.esm.js.map
+//# sourceMappingURL=toggle-field.entry.js.map

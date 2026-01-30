@@ -1,4 +1,4 @@
-import { r as registerInstance, a as createEvent, h } from './index-CgIiIA7J.js';
+import { r as registerInstance, c as createEvent, h } from './index-DqB_q70x.js';
 import { e as eFormField } from './form-field.model-kUcBqA0i.js';
 
 const inputFieldCss = "";
@@ -6,8 +6,8 @@ const inputFieldCss = "";
 const InputField = class {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.valueChanged = createEvent(this, "valueChanged", 7);
-        this.fieldBlurred = createEvent(this, "fieldBlurred", 7);
+        this.valueChanged = createEvent(this, "valueChanged");
+        this.fieldBlurred = createEvent(this, "fieldBlurred");
     }
     field;
     isInvalid;
@@ -39,4 +39,4 @@ const InputField = class {
 InputField.style = inputFieldCss;
 
 export { InputField as input_field };
-//# sourceMappingURL=input-field.entry.esm.js.map
+//# sourceMappingURL=input-field.entry.js.map
